@@ -1,0 +1,70 @@
+/* Estilos personalizados para Argus MVC */
+.info-box { cursor: pointer; }
+.info-box:hover { box-shadow: 0 0 5px rgba(0,0,0,0.2); }
+
+/* Estilos para las etiquetas de lotes dinámicos */
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 12px;
+    background-color: #f0f2f5;
+    color: #333;
+    padding: 4px 8px;
+    margin: 2px;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+.tag-badge .remove-tag {
+    margin-left: 6px;
+    color: #dc3545;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Reducir el tamaño de inputs y selects dentro de modales para un aspecto más compacto */
+.modal .form-control,
+.modal .form-select {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Margen interno en modales para que los botones no queden pegados al borde */
+.modal .modal-content {
+    margin: 0.5rem;
+}
+
+/* Ajustar tamaño de iconos y texto en los cuadros del panel de control */
+/* Ajustar tamaño de iconos y texto en los cuadros del panel de control */
+/* Ajustar tamaño de icono y contenedor en los cuadros del panel de control */
+.small-box .icon {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.small-box .icon i {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+.small-box .inner h4 {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Reducir el tamaño de las etiquetas y campos en formularios dentro de modales */
+.modal .form-label {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Asegurar que los modales scrollables muestren scroll correctamente y que los botones se mantengan visibles */
+.modal-dialog-scrollable .modal-body {
+    overflow-y: auto;
+}
+.modal-dialog-scrollable .modal-content {
+    max-height: 90vh;
+}
