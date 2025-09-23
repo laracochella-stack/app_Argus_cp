@@ -30,6 +30,37 @@ class ModeloClientes {
     }
 
     /**
+     * Inserta un nuevo cliente y devuelve el ID generado. Si falla, devuelve 0.
+     * Este método se utiliza cuando se necesita enlazar inmediatamente al cliente
+     * con otros registros (por ejemplo, crear un contrato). No reemplaza a
+     * mdlAgregarCliente, que sigue devolviendo 'ok' o 'error'.
+     *
+     * @param array $datos Datos del cliente
+     * @return int ID del cliente insertado o 0 en caso de error
+     */
+    public static function mdlAgregarClienteRetId($datos) {
+        $link = Conexion::conectar();
+        $sql = "INSERT INTO argus_clientes (nombre, nacionalidad, fecha_nacimiento, rfc, curp, ine, estado_civil, ocupacion, telefono, domicilio, email, beneficiario) VALUES (:nombre, :nacionalidad, :fecha, :rfc, :curp, :ine, :estado_civil, :ocupacion, :telefono, :domicilio, :email, :beneficiario)";
+        $stmt = $link->prepare($sql);
+        $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
+        $stmt->bindParam(':nacionalidad', $datos['nacionalidad'], PDO::PARAM_STR);
+        $stmt->bindParam(':fecha', $datos['fecha']);
+        $stmt->bindParam(':rfc', $datos['rfc'], PDO::PARAM_STR);
+        $stmt->bindParam(':curp', $datos['curp'], PDO::PARAM_STR);
+        $stmt->bindParam(':ine', $datos['ine'], PDO::PARAM_STR);
+        $stmt->bindParam(':estado_civil', $datos['estado_civil'], PDO::PARAM_STR);
+        $stmt->bindParam(':ocupacion', $datos['ocupacion'], PDO::PARAM_STR);
+        $stmt->bindParam(':telefono', $datos['telefono'], PDO::PARAM_STR);
+        $stmt->bindParam(':domicilio', $datos['domicilio'], PDO::PARAM_STR);
+        $stmt->bindParam(':email', $datos['email'], PDO::PARAM_STR);
+        $stmt->bindParam(':beneficiario', $datos['beneficiario'], PDO::PARAM_STR);
+        if ($stmt->execute()) {
+            return (int)$link->lastInsertId();
+        }
+        return 0;
+    }
+
+    /**
      * Obtiene todos los clientes registrados.
      * @return array
      */

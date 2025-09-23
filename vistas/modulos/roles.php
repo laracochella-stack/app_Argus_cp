@@ -5,6 +5,8 @@
  */
 // Procesar alta de nuevo usuario si se envió el formulario
 ControladorUsuarios::ctrRegistrarUsuario();
+// Procesar eliminación de usuarios
+ControladorUsuarios::ctrEliminarUsuario();
 // Obtener lista de usuarios para mostrar
 $usuarios = ControladorUsuarios::ctrMostrarUsuarios();
 // Restringir acceso a este módulo sólo para administradores
@@ -58,7 +60,7 @@ if (($_SESSION['permission'] ?? '') !== 'admin') {
       <div class="card-body table-responsive p-0">
         <table class="table table-hover">
           <thead>
-            <tr><th>ID</th><th>Usuario</th><th>Permiso</th><th>Fecha alta</th></tr>
+            <tr><th>ID</th><th>Usuario</th><th>Permiso</th><th>Fecha alta</th><th>Acciones</th></tr>
           </thead>
           <tbody>
             <?php foreach ($usuarios as $u) : ?>
@@ -67,6 +69,18 @@ if (($_SESSION['permission'] ?? '') !== 'admin') {
               <td><?php echo htmlspecialchars($u['username']); ?></td>
               <td><?php echo htmlspecialchars($u['permission']); ?></td>
               <td><?php echo htmlspecialchars($u['created_at']); ?></td>
+              <td>
+                <?php if (isset($_SESSION['iniciarSesion']) && $_SESSION['iniciarSesion'] === 'ok' && in_array($_SESSION['permission'], ['admin','moderator'])) : ?>
+                  <?php if ($u['id'] != ($_SESSION['id'] ?? 0)) : ?>
+                  <form method="post" style="display:inline;" onsubmit="return confirm('¿Está seguro de eliminar este usuario?');">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                    <input type="hidden" name="eliminarUsuario" value="1">
+                    <input type="hidden" name="usuario_id" value="<?php echo $u['id']; ?>">
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                  </form>
+                  <?php endif; ?>
+                <?php endif; ?>
+              </td>
             </tr>
             <?php endforeach; ?>
           </tbody>

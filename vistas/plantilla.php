@@ -33,6 +33,9 @@ if (empty($_SESSION['csrf_token'])) {
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="vistas/css/custom.css">
 
+    <!-- Summernote WYSIWYG editor -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs5.min.css">
+
     <!-- Cargar SweetAlert2 antes de que se ejecute cualquier script que lo utilice -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -47,7 +50,7 @@ if (isset($_SESSION['iniciarSesion']) && $_SESSION['iniciarSesion'] === 'ok') {
     // Determinar la ruta solicitada
     if (isset($_GET['ruta'])) {
         $ruta = $_GET['ruta'];
-        $permitidas = ['inicio','clientes','contratos','desarrollos','roles','parametros','salir'];
+        $permitidas = ['inicio','clientes','contratos','desarrollos','roles','parametros','crearContrato','salir'];
         if (in_array($ruta, $permitidas)) {
             include 'modulos/' . $ruta . '.php';
         } else {
@@ -70,6 +73,8 @@ if (isset($_SESSION['iniciarSesion']) && $_SESSION['iniciarSesion'] === 'ok') {
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- Summernote JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote-bs5.min.js"></script>
 <script src="vistas/js/app.js"></script>
 </body>
 </html>

@@ -35,6 +35,12 @@
             <p>Contratos</p>
           </a>
         </li>
+        <li class="nav-item">
+          <a href="index.php?ruta=crearContrato" class="nav-link">
+            <i class="nav-icon fas fa-file-signature"></i>
+            <p>Crear contrato</p>
+          </a>
+        </li>
         <?php if (in_array($_SESSION['permission'] ?? '', ['admin','moderator'])) : ?>
         <li class="nav-item">
           <a href="index.php?ruta=parametros" class="nav-link">

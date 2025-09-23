@@ -47,4 +47,20 @@ class ModeloUsuarios {
         $stmt = $link->query("SELECT id, username, permission, created_at FROM argus_users ORDER BY id ASC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Eliminar un usuario por su ID.
+     *
+     * @param int $id Identificador del usuario
+     * @return string 'ok' si se eliminó, 'error' en caso contrario
+     */
+    public static function mdlEliminarUsuario($id) {
+        $link = Conexion::conectar();
+        $stmt = $link->prepare("DELETE FROM argus_users WHERE id = :id");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        if ($stmt->execute()) {
+            return 'ok';
+        }
+        return 'error';
+    }
 }

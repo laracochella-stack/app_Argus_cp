@@ -12,13 +12,25 @@ $clientes = ControladorClientes::ctrMostrarClientes();
 // Obtener lista de desarrollos para el formulario de contrato
 $desarrollosDisponibles = ControladorDesarrollos::ctrMostrarDesarrollos();
 
-// Obtener lista de nacionalidades para select de edición
+// Obtener lista de nacionalidades
 $listaNacionalidades = [];
 if (class_exists('ControladorParametros')) {
     $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad');
 }
-// Obtener lista de nacionalidades para selects dinámicos
-$listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad');
+// Construir mapa identificador -> nombre para nacionalidades
+$mapNacionalidades = [];
+foreach ($listaNacionalidades as $nac) {
+    $mapNacionalidades[$nac['identificador']] = $nac['nombre'];
+}
+
+// Obtener lista de tipos de contrato para mapear identificador a nombre (usado en el select de desarrollos)
+$listaTiposContrato = [];
+if (class_exists('ControladorParametros')) {
+    $varsTipo = ControladorParametros::ctrMostrarVariables('tipo_contrato');
+    foreach ($varsTipo as $var) {
+        $listaTiposContrato[$var['identificador']] = $var['nombre'];
+    }
+}
 ?>
 <section class="content-header">
   <div class="container-fluid">
@@ -194,7 +206,8 @@ $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad'
                 <?php foreach ($desarrollosDisponibles as $des) : ?>
                 <option value="<?php echo $des['id']; ?>"
                         data-superficie="<?php echo htmlspecialchars($des['superficie'], ENT_QUOTES); ?>"
-                        data-tipo="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
+                        data-tipo-id="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
+                        data-tipo-nombre="<?php echo htmlspecialchars($listaTiposContrato[$des['tipo_contrato']] ?? $des['tipo_contrato'], ENT_QUOTES); ?>"
                         data-lotes="<?php echo htmlspecialchars($des['lotes_disponibles'] ?? '', ENT_QUOTES); ?>">
                   <?php echo htmlspecialchars($des['nombre']); ?>
                 </option>
@@ -215,6 +228,9 @@ $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad'
               <input type="text" class="form-control" id="inputFraccionContrato" placeholder="Ingresa una fracción y presiona Enter">
               <!-- Contenedor donde se mostrarán las etiquetas de fracciones ingresadas -->
               <div id="contenedorFraccionesContrato" class="mt-2"></div>
+              <!-- Lista de fracciones disponibles para el desarrollo seleccionado -->
+              <label class="form-label mt-2">Lotes disponibles:</label>
+              <div id="listaFraccionesDisponiblesContrato" class="mt-1" style="font-size:0.8rem;"></div>
               <!-- Input oculto que contendrá la lista de fracciones separadas por coma -->
               <!-- Guardaremos el listado de fracciones como una cadena separada por comas -->
               <input type="hidden" name="fracciones" id="hiddenFraccionesContrato">
@@ -237,7 +253,48 @@ $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad'
             </div>
             <div class="col-md-6">
               <label class="form-label">Tipo de contrato</label>
-              <input type="text" name="tipo_contrato" id="contratoTipo" class="form-control" readonly required>
+              <!-- Campo oculto para enviar el identificador del tipo de contrato -->
+              <input type="hidden" name="tipo_contrato" id="contratoTipoId">
+              <!-- Campo de solo lectura para mostrar el nombre del tipo de contrato -->
+              <input type="text" id="contratoTipoNombre" class="form-control" readonly required>
+            </div>
+
+            <!-- Nuevos campos para creación de contrato -->
+            <div class="col-md-6">
+              <label class="form-label">Monto del precio del inmueble</label>
+              <input type="number" step="0.01" name="monto_inmueble" id="montoInmueble" class="form-control" required>
+              <input type="hidden" name="monto_inmueble_fixed" id="montoInmuebleFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Enganche o pago inicial</label>
+              <input type="number" step="0.01" name="enganche" id="enganche" class="form-control" required>
+              <input type="hidden" name="enganche_fixed" id="engancheFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Saldo de pago</label>
+              <input type="number" step="0.01" name="saldo_pago" id="saldoPago" class="form-control" readonly required>
+              <input type="hidden" name="saldo_pago_fixed" id="saldoPagoFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Parcialidades anuales</label>
+              <input type="text" name="parcialidades_anuales" id="parcialidadesAnuales" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Penalización 10%</label>
+              <input type="number" step="0.01" name="penalizacion" id="penalizacion" class="form-control" readonly required>
+              <input type="hidden" name="penalizacion_fixed" id="penalizacionFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Día de pago</label>
+              <input type="text" name="dia_pago" id="diaPago" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Rango de compromiso de pago</label>
+              <input type="text" name="rango_compromiso_pago" id="rangoCompromisoPago" class="form-control">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Vigencia del pagaré</label>
+              <input type="date" name="vigencia_pagare" id="vigenciaPagare" class="form-control">
             </div>
           </div>
         </div>
@@ -322,7 +379,8 @@ $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad'
                    data-bs-toggle="modal" data-bs-target="#modalVerCliente"
                    data-id="<?php echo $cli['id']; ?>"
                    data-nombre="<?php echo htmlspecialchars($cli['nombre'], ENT_QUOTES); ?>"
-                   data-nacionalidad="<?php echo htmlspecialchars($cli['nacionalidad'], ENT_QUOTES); ?>"
+                   data-nacionalidad-id="<?php echo htmlspecialchars($cli['nacionalidad'], ENT_QUOTES); ?>"
+                   data-nacionalidad-nombre="<?php echo htmlspecialchars($mapNacionalidades[$cli['nacionalidad']] ?? $cli['nacionalidad'], ENT_QUOTES); ?>"
                    data-fecha="<?php echo htmlspecialchars($cli['fecha_nacimiento'], ENT_QUOTES); ?>"
                    data-rfc="<?php echo htmlspecialchars($cli['rfc'], ENT_QUOTES); ?>"
                    data-curp="<?php echo htmlspecialchars($cli['curp'], ENT_QUOTES); ?>"
@@ -341,7 +399,8 @@ $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad'
                 <button type="button" class="btn btn-warning btn-sm btnVerCliente" data-bs-toggle="modal" data-bs-target="#modalVerCliente"
                   data-id="<?php echo $cli['id']; ?>"
                   data-nombre="<?php echo htmlspecialchars($cli['nombre'], ENT_QUOTES); ?>"
-                  data-nacionalidad="<?php echo htmlspecialchars($cli['nacionalidad'], ENT_QUOTES); ?>"
+                  data-nacionalidad-id="<?php echo htmlspecialchars($cli['nacionalidad'], ENT_QUOTES); ?>"
+                  data-nacionalidad-nombre="<?php echo htmlspecialchars($mapNacionalidades[$cli['nacionalidad']] ?? $cli['nacionalidad'], ENT_QUOTES); ?>"
                   data-fecha="<?php echo htmlspecialchars($cli['fecha_nacimiento'], ENT_QUOTES); ?>"
                   data-rfc="<?php echo htmlspecialchars($cli['rfc'], ENT_QUOTES); ?>"
                   data-curp="<?php echo htmlspecialchars($cli['curp'], ENT_QUOTES); ?>"
@@ -358,7 +417,8 @@ $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad'
                 <button type="button" class="btn btn-primary btn-sm btnEditarCliente" data-bs-toggle="modal" data-bs-target="#modalEditarCliente"
                   data-id="<?php echo $cli['id']; ?>"
                   data-nombre="<?php echo htmlspecialchars($cli['nombre'], ENT_QUOTES); ?>"
-                  data-nacionalidad="<?php echo htmlspecialchars($cli['nacionalidad'], ENT_QUOTES); ?>"
+                  data-nacionalidad-id="<?php echo htmlspecialchars($cli['nacionalidad'], ENT_QUOTES); ?>"
+                  data-nacionalidad-nombre="<?php echo htmlspecialchars($mapNacionalidades[$cli['nacionalidad']] ?? $cli['nacionalidad'], ENT_QUOTES); ?>"
                   data-fecha="<?php echo htmlspecialchars($cli['fecha_nacimiento'], ENT_QUOTES); ?>"
                   data-rfc="<?php echo htmlspecialchars($cli['rfc'], ENT_QUOTES); ?>"
                   data-curp="<?php echo htmlspecialchars($cli['curp'], ENT_QUOTES); ?>"
@@ -396,7 +456,8 @@ $listaNacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad'
                   data-firma="<?php echo htmlspecialchars($contratoDatos['fecha_firma_contrato'], ENT_QUOTES); ?>"
                   data-habitacional="<?php echo htmlspecialchars($contratoDatos['habitacional_colindancias'], ENT_QUOTES); ?>"
                   data-inicio="<?php echo htmlspecialchars($contratoDatos['inicio_pagos'], ENT_QUOTES); ?>"
-                  data-tipo="<?php echo htmlspecialchars($contratoDatos['tipo_contrato'], ENT_QUOTES); ?>">
+                  data-tipo-id="<?php echo htmlspecialchars($contratoDatos['tipo_contrato'], ENT_QUOTES); ?>"
+                  data-tipo-nombre="<?php echo htmlspecialchars($listaTiposContrato[$contratoDatos['tipo_contrato']] ?? $contratoDatos['tipo_contrato'], ENT_QUOTES); ?>">
                   Ver contrato
                 </button>
                 <?php elseif ($numContratos > 1) : ?>

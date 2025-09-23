@@ -49,4 +49,67 @@ class ModeloPlantillas
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         return $stmt->execute() ? 'ok' : 'error';
     }
+
+    /**
+     * Actualiza una plantilla existente. Permite cambiar el tipo de contrato,
+     * el nombre original del archivo y la ruta del archivo.
+     * Si se desea mantener alguno de los valores, debe enviarse el
+     * valor actual.
+     *
+     * @param array $datos Debe contener id, tipo_contrato_id, nombre_archivo, ruta_archivo
+     * @return string
+     */
+    static public function mdlEditarPlantilla($datos)
+    {
+        $stmt = Conexion::conectar()->prepare(
+            "UPDATE argus_plantillas SET tipo_contrato_id = :tipo_id, nombre_archivo = :nombre_archivo, ruta_archivo = :ruta_archivo WHERE id = :id"
+        );
+        $stmt->bindParam(':tipo_id', $datos['tipo_contrato_id'], PDO::PARAM_INT);
+        $stmt->bindParam(':nombre_archivo', $datos['nombre_archivo'], PDO::PARAM_STR);
+        $stmt->bindParam(':ruta_archivo', $datos['ruta_archivo'], PDO::PARAM_STR);
+        $stmt->bindParam(':id', $datos['id'], PDO::PARAM_INT);
+        return $stmt->execute() ? 'ok' : 'error';
+    }
+
+    /**
+     * Obtiene una plantilla por su identificador de tipo de contrato.
+     *
+     * Este método retorna la primera plantilla que coincida con el tipo de contrato
+     * indicado. Se espera que la tabla argus_plantillas contenga una columna
+     * tipo_contrato_id que haga referencia al tipo definido en la tabla argus_variables.
+     *
+     * @param mixed $tipoId Identificador del tipo de contrato
+     * @return array|null Devuelve los campos de la plantilla o null si no existe
+     */
+    static public function mdlObtenerPlantillaPorTipo($tipoId)
+    {
+        $pdo = Conexion::conectar();
+        // Si el parámetro es numérico intentamos obtener por ID directamente.
+        if (is_numeric($tipoId)) {
+            $stmt = $pdo->prepare(
+                "SELECT id, tipo_contrato_id, nombre_archivo, ruta_archivo
+                 FROM argus_plantillas
+                 WHERE tipo_contrato_id = :tipo_id
+                 LIMIT 1"
+            );
+            $stmt->bindParam(':tipo_id', $tipoId);
+            $stmt->execute();
+            $res = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($res) return $res;
+        }
+        // Cuando no es numérico o no se encuentra coincidencia por ID, buscar por
+        // identificador o nombre en la tabla de variables. Esto permite usar
+        // directamente el string almacenado en argus_desarrollos.tipo_contrato.
+        $stmt = $pdo->prepare(
+            "SELECT p.id, p.tipo_contrato_id, p.nombre_archivo, p.ruta_archivo
+             FROM argus_plantillas p
+             INNER JOIN argus_variables v ON p.tipo_contrato_id = v.id
+             WHERE v.identificador = :str OR v.nombre = :str
+             LIMIT 1"
+        );
+        $stmt->bindParam(':str', $tipoId);
+        $stmt->execute();
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $res ? $res : null;
+    }
 }

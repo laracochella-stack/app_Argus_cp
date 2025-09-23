@@ -8,6 +8,8 @@
 ControladorParametros::ctrAgregarVariable();
 ControladorParametros::ctrEditarVariable();
 ControladorParametros::ctrSubirPlantilla();
+ControladorParametros::ctrEditarPlantilla();
+ControladorParametros::ctrEliminarPlantilla();
 
 // Obtener variables
 $nacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad');
@@ -148,7 +150,20 @@ $plantillas = ControladorParametros::ctrMostrarPlantillas();
               <td><?php echo htmlspecialchars($pl['nombre_archivo']); ?></td>
               <td><a href="<?php echo htmlspecialchars($pl['ruta_archivo']); ?>" target="_blank">Descargar</a></td>
               <td>
-                <!-- Se podrían añadir acciones de eliminar en el futuro -->
+                <?php if (isset($_SESSION['iniciarSesion']) && $_SESSION['iniciarSesion'] === 'ok' && in_array($_SESSION['permission'], ['admin','moderator'])) : ?>
+                <!-- Botón editar plantilla -->
+                <button type="button" class="btn btn-primary btn-sm btnEditarPlantilla" data-bs-toggle="modal" data-bs-target="#modalEditarPlantilla"
+                  data-id="<?php echo $pl['id']; ?>" data-tipo-id="<?php echo $pl['tipo_contrato_id']; ?>" data-nombre="<?php echo htmlspecialchars($pl['nombre_archivo'], ENT_QUOTES); ?>">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+                <!-- Formulario de eliminación -->
+                <form method="post" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar esta plantilla?');">
+                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                  <input type="hidden" name="eliminarPlantilla" value="1">
+                  <input type="hidden" name="plantilla_id" value="<?php echo $pl['id']; ?>">
+                  <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </form>
+                <?php endif; ?>
               </td>
             </tr>
             <?php endforeach; ?>
@@ -177,6 +192,42 @@ $plantillas = ControladorParametros::ctrMostrarPlantillas();
             <div class="mb-3">
               <label class="form-label">Nombre</label>
               <input type="text" name="nombre" id="editarVariableNombre" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal editar plantilla -->
+  <div class="modal fade" id="modalEditarPlantilla" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="formEditarPlantilla" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+          <input type="hidden" name="editarPlantilla" value="1">
+          <input type="hidden" name="plantilla_id" id="editarPlantillaId">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar plantilla</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Tipo de contrato</label>
+              <select name="tipo_contrato_id" id="editarPlantillaTipo" class="form-select" required>
+                <?php foreach ($tiposContrato as $t) : ?>
+                  <option value="<?php echo $t['id']; ?>"><?php echo htmlspecialchars($t['nombre']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Reemplazar archivo (opcional)</label>
+              <input type="file" name="plantilla" class="form-control" accept=".docx,.pdf">
+              <small class="text-muted">Dejar en blanco para conservar el archivo actual. Tamaño máximo 150 MB.</small>
             </div>
           </div>
           <div class="modal-footer">

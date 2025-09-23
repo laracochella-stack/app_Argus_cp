@@ -140,6 +140,130 @@ class ControladorParametros
     }
 
     /**
+     * Procesa la edición de una plantilla existente. Permite reemplazar el archivo
+     * subido y cambiar el tipo de contrato asociado. Requiere permisos de
+     * administrador o moderador.
+     */
+    static public function ctrEditarPlantilla()
+    {
+        if (!isset($_POST['editarPlantilla'])) {
+            return;
+        }
+        if (!isset($_SESSION['iniciarSesion']) || $_SESSION['iniciarSesion'] !== 'ok' || !in_array($_SESSION['permission'], ['admin','moderator'])) {
+            echo 'error-permiso';
+            return;
+        }
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
+            echo 'error-token';
+            return;
+        }
+        $id = intval($_POST['plantilla_id'] ?? 0);
+        $tipoId = intval($_POST['tipo_contrato_id'] ?? 0);
+        if (!$id || !$tipoId) {
+            echo 'error';
+            return;
+        }
+        // Recuperar plantilla actual para eliminar archivo anterior si es reemplazado
+        $plantillaActual = null;
+        $todas = ModeloPlantillas::mdlMostrarPlantillas();
+        foreach ($todas as $tpl) {
+            if ((int)$tpl['id'] === $id) {
+                $plantillaActual = $tpl;
+                break;
+            }
+        }
+        // Manejar archivo nuevo si se sube
+        $nuevoNombre = $plantillaActual['nombre_archivo'] ?? '';
+        $rutaRelativa = $plantillaActual['ruta_archivo'] ?? '';
+        if (isset($_FILES['plantilla']) && $_FILES['plantilla']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['plantilla'];
+            // Validar tamaño y extensión
+            if ($file['size'] > 150 * 1024 * 1024) {
+                echo 'error-tamano';
+                return;
+            }
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, ['docx','pdf'])) {
+                echo 'error-extension';
+                return;
+            }
+            // Directorio de plantillas
+            $uploadDir = __DIR__ . '/../vistas/plantillas';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $nuevoArchivoNombre = uniqid('tpl_') . '.' . $ext;
+            $rutaRel = 'vistas/plantillas/' . $nuevoArchivoNombre;
+            $destino = __DIR__ . '/../' . $rutaRel;
+            if (!move_uploaded_file($file['tmp_name'], $destino)) {
+                echo 'error-guardar';
+                return;
+            }
+            // Eliminar archivo anterior si existe
+            if ($plantillaActual && !empty($plantillaActual['ruta_archivo'])) {
+                $oldPath = __DIR__ . '/../' . $plantillaActual['ruta_archivo'];
+                if (is_file($oldPath)) {
+                    @unlink($oldPath);
+                }
+            }
+            $nuevoNombre = $file['name'];
+            $rutaRelativa = $rutaRel;
+        }
+        // Construir datos para actualizar
+        $datos = [
+            'id' => $id,
+            'tipo_contrato_id' => $tipoId,
+            'nombre_archivo' => $nuevoNombre,
+            'ruta_archivo' => $rutaRelativa
+        ];
+        $resp = ModeloPlantillas::mdlEditarPlantilla($datos);
+        echo $resp;
+    }
+
+    /**
+     * Procesa la eliminación de una plantilla. Sólo para administradores y
+     * moderadores. Elimina el registro en la base de datos y borra el archivo
+     * asociado.
+     */
+    static public function ctrEliminarPlantilla()
+    {
+        if (!isset($_POST['eliminarPlantilla'])) {
+            return;
+        }
+        if (!isset($_SESSION['iniciarSesion']) || $_SESSION['iniciarSesion'] !== 'ok' || !in_array($_SESSION['permission'], ['admin','moderator'])) {
+            echo 'error-permiso';
+            return;
+        }
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
+            echo 'error-token';
+            return;
+        }
+        $id = intval($_POST['plantilla_id'] ?? 0);
+        if (!$id) {
+            echo 'error';
+            return;
+        }
+        // Obtener plantilla actual para eliminar archivo
+        $plantillaActual = null;
+        $todas = ModeloPlantillas::mdlMostrarPlantillas();
+        foreach ($todas as $tpl) {
+            if ((int)$tpl['id'] === $id) {
+                $plantillaActual = $tpl;
+                break;
+            }
+        }
+        // Eliminar registro
+        $resp = ModeloPlantillas::mdlEliminarPlantilla($id);
+        if ($resp === 'ok' && $plantillaActual && !empty($plantillaActual['ruta_archivo'])) {
+            $ruta = __DIR__ . '/../' . $plantillaActual['ruta_archivo'];
+            if (is_file($ruta)) {
+                @unlink($ruta);
+            }
+        }
+        echo $resp;
+    }
+
+    /**
      * Devuelve todas las plantillas con su tipo de contrato.
      *
      * @return array

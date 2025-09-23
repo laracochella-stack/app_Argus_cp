@@ -79,7 +79,8 @@ class ModeloContratos
         if ($clienteId !== null) {
             $stmt = $pdo->prepare(
                 "SELECT c.id, c.cliente_id, c.desarrollo_id, c.datta_contrato, c.created_at,
-                        cl.nombre AS nombre_cliente, d.nombre AS nombre_desarrollo, d.tipo_contrato AS tipo_contrato
+                        cl.nombre AS nombre_cliente, d.nombre AS nombre_desarrollo, d.tipo_contrato AS tipo_contrato,
+                        d.lotes_disponibles
                  FROM argus_contratos_data c
                  INNER JOIN argus_clientes cl ON c.cliente_id = cl.id
                  INNER JOIN argus_desarrollos d ON c.desarrollo_id = d.id
@@ -89,7 +90,8 @@ class ModeloContratos
         } else {
             $stmt = $pdo->prepare(
                 "SELECT c.id, c.cliente_id, c.desarrollo_id, c.datta_contrato, c.created_at,
-                        cl.nombre AS nombre_cliente, d.nombre AS nombre_desarrollo, d.tipo_contrato AS tipo_contrato
+                        cl.nombre AS nombre_cliente, d.nombre AS nombre_desarrollo, d.tipo_contrato AS tipo_contrato,
+                        d.lotes_disponibles
                  FROM argus_contratos_data c
                  INNER JOIN argus_clientes cl ON c.cliente_id = cl.id
                  INNER JOIN argus_desarrollos d ON c.desarrollo_id = d.id"

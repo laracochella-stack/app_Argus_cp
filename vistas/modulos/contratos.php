@@ -22,6 +22,16 @@ foreach ($contratos as $ct) {
         $tiposLista[] = $ct['tipo_contrato'];
     }
 }
+
+// Obtener lista de tipos de contrato para mapear identificador a nombre
+$varsTipoContrato = [];
+if (class_exists('ControladorParametros')) {
+    $varsTipoContrato = ControladorParametros::ctrMostrarVariables('tipo_contrato');
+}
+$mapTiposContrato = [];
+foreach ($varsTipoContrato as $var) {
+    $mapTiposContrato[$var['identificador']] = $var['nombre'];
+}
 ?>
 <section class="content-header">
   <div class="container-fluid">
@@ -51,7 +61,7 @@ foreach ($contratos as $ct) {
             <select id="filtroTipo" class="form-select">
               <option value="">Todos</option>
               <?php foreach ($tiposLista as $tip) : ?>
-                <option value="<?php echo htmlspecialchars($tip, ENT_QUOTES); ?>"><?php echo htmlspecialchars($tip); ?></option>
+                <option value="<?php echo htmlspecialchars($tip, ENT_QUOTES); ?>"><?php echo htmlspecialchars($mapTiposContrato[$tip] ?? $tip); ?></option>
               <?php endforeach; ?>
             </select>
           </div>
@@ -65,6 +75,7 @@ foreach ($contratos as $ct) {
                 <th>Desarrollo</th>
                 <th>Tipo contrato</th>
                 <th>Mensualidades</th>
+                <th>Folio</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -74,11 +85,12 @@ foreach ($contratos as $ct) {
                 <td><?php echo $ct['id']; ?></td>
                 <td><?php echo htmlspecialchars($ct['nombre_cliente']); ?></td>
                 <td><?php echo htmlspecialchars($ct['nombre_desarrollo']); ?></td>
-                <td><?php echo htmlspecialchars($ct['tipo_contrato']); ?></td>
+                <td><?php echo htmlspecialchars($mapTiposContrato[$ct['tipo_contrato']] ?? $ct['tipo_contrato']); ?></td>
                 <td><?php echo htmlspecialchars($ct['mensualidades']); ?></td>
+                <td><?php echo htmlspecialchars($ct['folio'] ?? ''); ?></td>
                 <td>
                   <!-- Botón editar contrato -->
-                  <button type="button" class="btn btn-primary btn-sm btnEditarContrato" data-bs-toggle="modal" data-bs-target="#modalEditarContrato"
+                    <button type="button" class="btn btn-primary btn-sm btnEditarContrato" data-bs-toggle="modal" data-bs-target="#modalEditarContrato"
                     data-contrato-id="<?php echo $ct['id']; ?>"
                     data-mensualidades="<?php echo htmlspecialchars($ct['mensualidades']); ?>"
                     data-superficie="<?php echo htmlspecialchars($ct['superficie']); ?>"
@@ -87,11 +99,33 @@ foreach ($contratos as $ct) {
                     data-firma="<?php echo htmlspecialchars($ct['fecha_firma_contrato']); ?>"
                     data-habitacional="<?php echo htmlspecialchars($ct['habitacional_colindancias']); ?>"
                     data-inicio="<?php echo htmlspecialchars($ct['inicio_pagos']); ?>"
-                    data-tipo="<?php echo htmlspecialchars($ct['tipo_contrato']); ?>">
+                    data-superficie-fixed="<?php echo htmlspecialchars($ct['superficie_fixed'] ?? '', ENT_QUOTES); ?>"
+                    data-pago-mensual="<?php echo htmlspecialchars($ct['pago_mensual'] ?? '', ENT_QUOTES); ?>"
+                    data-pago-mensual-fixed="<?php echo htmlspecialchars($ct['pago_mensual_fixed'] ?? '', ENT_QUOTES); ?>"
+                    data-tipo-id="<?php echo htmlspecialchars($ct['tipo_contrato']); ?>"
+                    data-tipo-nombre="<?php echo htmlspecialchars($mapTiposContrato[$ct['tipo_contrato']] ?? $ct['tipo_contrato']); ?>"
+                    data-lotes="<?php echo htmlspecialchars($ct['lotes_disponibles'], ENT_QUOTES); ?>"
+                    data-monto="<?php echo htmlspecialchars($ct['monto_precio_inmueble'], ENT_QUOTES); ?>"
+                    data-monto-fixed="<?php echo htmlspecialchars($ct['monto_precio_inmueble_fixed'], ENT_QUOTES); ?>"
+                    data-enganche="<?php echo htmlspecialchars($ct['enganche'], ENT_QUOTES); ?>"
+                    data-enganche-fixed="<?php echo htmlspecialchars($ct['enganche_fixed'], ENT_QUOTES); ?>"
+                    data-saldo="<?php echo htmlspecialchars($ct['saldo_pago'], ENT_QUOTES); ?>"
+                    data-saldo-fixed="<?php echo htmlspecialchars($ct['saldo_pago_fixed'], ENT_QUOTES); ?>"
+                    data-parcialidades="<?php echo htmlspecialchars($ct['parcialidades_anuales'], ENT_QUOTES); ?>"
+                    data-penalizacion="<?php echo htmlspecialchars($ct['penalizacion_10'], ENT_QUOTES); ?>"
+                    data-penalizacion-fixed="<?php echo htmlspecialchars($ct['penalizacion_10_fixed'], ENT_QUOTES); ?>"
+                    data-folio="<?php echo htmlspecialchars($ct['folio'] ?? '', ENT_QUOTES); ?>"
+                    data-rango-pago="<?php echo htmlspecialchars($ct['rango_pago'] ?? '', ENT_QUOTES); ?>"
+                    data-vigencia-pagare="<?php echo htmlspecialchars($ct['vigencia_pagare'], ENT_QUOTES); ?>"
+                    data-fecha-contrato="<?php echo htmlspecialchars($ct['fecha_contrato'] ?? '', ENT_QUOTES); ?>"
+                    data-fecha-contrato-fixed="<?php echo htmlspecialchars($ct['fecha_contrato_fixed'] ?? '', ENT_QUOTES); ?>">
                     <i class="fas fa-pencil-alt"></i>
                   </button>
-                  <!-- Botón generar documento (placeholder) -->
-                  <button type="button" class="btn btn-secondary btn-sm" disabled title="Generar contrato (en construcción)">
+                  <!-- Botón generar documento -->
+                  <button type="button"
+                          class="btn btn-success btn-sm btnGenerarContrato"
+                          data-contrato-id="<?php echo $ct['id']; ?>"
+                          title="Generar contrato">
                     <i class="fas fa-file-alt"></i>
                   </button>
                 </td>
@@ -124,7 +158,9 @@ foreach ($contratos as $ct) {
               </div>
               <div class="col-md-6">
                 <label class="form-label">Superficie</label>
-                <input type="text" name="superficie" id="editarContratoSuperficie" class="form-control" required>
+                <input type="text" name="superficie" id="editarContratoSuperficie" class="form-control text-uppercase" required oninput="this.value = this.value.toUpperCase();">
+                <!-- Campo oculto para almacenar la superficie convertida a letras en edición -->
+                <input type="hidden" name="superficie_fixed" id="editarSuperficieFixed">
               </div>
               <div class="col-md-6">
                 <label class="form-label">Fracción vendida/cedida</label>
@@ -132,6 +168,9 @@ foreach ($contratos as $ct) {
                 <input type="text" class="form-control" id="inputFraccionEditar" placeholder="Ingresa una fracción y presiona Enter">
                 <!-- Contenedor de etiquetas de fracciones -->
                 <div id="contenedorFraccionesEditar" class="mt-2"></div>
+                <!-- Lista de fracciones disponibles para el desarrollo seleccionado en edición -->
+                <label class="form-label mt-2">Lotes disponibles:</label>
+                <div id="listaFraccionesDisponiblesEditar" class="mt-1" style="font-size:0.8rem;"></div>
                 <!-- Campo oculto para enviar la lista separada por coma -->
                 <input type="hidden" name="fracciones" id="hiddenFraccionesEditar">
               </div>
@@ -145,7 +184,8 @@ foreach ($contratos as $ct) {
               </div>
               <div class="col-md-6">
                 <label class="form-label">Habitacional y colindancias</label>
-                <input type="text" name="habitacional" id="editarContratoHabitacional" class="form-control" required>
+                <!-- Campo de texto simple en mayúsculas para habitacional en edición -->
+                <textarea class="form-control text-uppercase" name="habitacional" id="editarHabitacional" rows="3" oninput="this.value = this.value.toUpperCase();"></textarea>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Inicio de pagos</label>
@@ -153,8 +193,72 @@ foreach ($contratos as $ct) {
               </div>
               <div class="col-md-6">
                 <label class="form-label">Tipo de contrato</label>
-                <input type="text" name="tipo_contrato" id="editarContratoTipo" class="form-control" readonly required>
+                <!-- Campo oculto para enviar el identificador del tipo de contrato en edición -->
+                <input type="hidden" name="tipo_contrato" id="editarContratoTipoId">
+                <!-- Campo de solo lectura para mostrar el nombre del tipo de contrato -->
+                <input type="text" id="editarContratoTipoNombre" class="form-control" readonly required>
               </div>
+
+            <!-- Nuevos campos para el contrato -->
+            <div class="col-md-6">
+              <label class="form-label">Monto del precio del inmueble</label>
+              <input type="number" step="0.01" name="monto_inmueble" id="editarMontoInmueble" class="form-control" required>
+              <!-- Campo oculto con el monto convertido a letras -->
+              <input type="hidden" name="monto_inmueble_fixed" id="editarMontoInmuebleFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Enganche o pago inicial</label>
+              <input type="number" step="0.01" name="enganche" id="editarEnganche" class="form-control" required>
+              <input type="hidden" name="enganche_fixed" id="editarEngancheFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Saldo de pago</label>
+              <input type="number" step="0.01" name="saldo_pago" id="editarSaldoPago" class="form-control" readonly required>
+              <input type="hidden" name="saldo_pago_fixed" id="editarSaldoPagoFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Parcialidades anuales</label>
+              <input type="text" name="parcialidades_anuales" id="editarParcialidadesAnuales" class="form-control">
+            </div>
+
+            <!-- Nuevo campo: pago mensual en edición -->
+            <div class="col-md-6">
+              <label class="form-label">Pago mensual</label>
+              <input type="number" step="0.01" name="pago_mensual" id="editarPagoMensual" class="form-control" required>
+              <input type="hidden" name="pago_mensual_fixed" id="editarPagoMensualFixed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Penalización 10%</label>
+              <input type="number" step="0.01" name="penalizacion" id="editarPenalizacion" class="form-control" readonly required>
+              <input type="hidden" name="penalizacion_fixed" id="editarPenalizacionFixed">
+            </div>
+              <!-- Campo para folio -->
+              <div class="col-md-6">
+                <label class="form-label">Folio</label>
+                <input type="text" name="folio" id="editarContratoFolio" class="form-control text-uppercase" required oninput="this.value = this.value.toUpperCase();">
+              </div>
+              <!-- Rango de pago unificado: inicio y fin -->
+              <div class="col-md-6">
+                <label class="form-label">Rango de pago (de - a)</label>
+                <div class="input-group">
+                  <input type="date" name="rango_pago_inicio" id="editarRangoPagoInicio" class="form-control">
+                  <span class="input-group-text">a</span>
+                  <input type="date" name="rango_pago_fin" id="editarRangoPagoFin" class="form-control">
+                </div>
+              </div>
+            <div class="col-md-6">
+              <label class="form-label">Vigencia del pagaré</label>
+              <input type="date" name="vigencia_pagare" id="editarVigenciaPagare" class="form-control">
+            </div>
+
+            <!-- Fecha del contrato en edición -->
+            <div class="col-md-6">
+              <label class="form-label">Fecha del contrato</label>
+              <input type="date" name="fecha_contrato" id="editarFechaContrato" class="form-control">
+              <input type="hidden" name="fecha_contrato_fixed" id="editarFechaContratoFixed">
+              <!-- Día de inicio (sólo número), calculado desde la fecha del contrato -->
+              <input type="hidden" name="dia_inicio" id="editarDiaInicio">
+            </div>
             </div>
           </div>
           <div class="modal-footer">

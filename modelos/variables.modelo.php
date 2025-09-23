@@ -19,6 +19,26 @@ class ModeloVariables
     }
 
     /**
+     * Devuelve el nombre de una variable dado su tipo e identificador.
+     * Si no existe, devuelve el identificador original.
+     *
+     * @param string $tipo Tipo de variable (ej: 'nacionalidad', 'tipo_contrato')
+     * @param string $identificador Identificador único de la variable
+     * @return string Nombre de la variable o el mismo identificador si no se encuentra
+     */
+    static public function mdlObtenerNombrePorIdentificador($tipo, $identificador)
+    {
+        $stmt = Conexion::conectar()->prepare(
+            "SELECT nombre FROM argus_variables WHERE tipo = :tipo AND identificador = :identificador LIMIT 1"
+        );
+        $stmt->bindParam(':tipo', $tipo, PDO::PARAM_STR);
+        $stmt->bindParam(':identificador', $identificador, PDO::PARAM_STR);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['nombre'] ?? $identificador;
+    }
+
+    /**
      * Inserta una nueva variable.
      *
      * @param array $datos

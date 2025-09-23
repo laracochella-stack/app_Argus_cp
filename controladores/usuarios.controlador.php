@@ -97,4 +97,36 @@ class ControladorUsuarios {
     public static function ctrMostrarUsuarios() {
         return ModeloUsuarios::mdlMostrarUsuarios();
     }
+
+    /**
+     * Procesar la eliminación de un usuario. Requiere permisos de administrador
+     * o moderador. El formulario debe incluir 'eliminarUsuario' y 'usuario_id'.
+     */
+    public static function ctrEliminarUsuario() {
+        if (!isset($_POST['eliminarUsuario'])) {
+            return;
+        }
+        // Verificar sesión y permisos
+        if (!isset($_SESSION['iniciarSesion']) || $_SESSION['iniciarSesion'] !== 'ok' || !in_array($_SESSION['permission'], ['admin','moderator'])) {
+            echo '<script>Swal.fire({title:"Sin permiso", text:"No tiene permisos para eliminar usuarios", icon:"error"});</script>';
+            return;
+        }
+        // Validar token CSRF
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
+            echo '<script>Swal.fire({title:"Error de seguridad", text:"Token inválido", icon:"error"});</script>';
+            return;
+        }
+        $id = intval($_POST['usuario_id'] ?? 0);
+        // No permitir eliminar el propio usuario que está logueado
+        if ($id === ($_SESSION['id'] ?? 0)) {
+            echo '<script>Swal.fire({title:"Acción no permitida", text:"No puede eliminar su propia cuenta", icon:"warning"});</script>';
+            return;
+        }
+        $resp = ModeloUsuarios::mdlEliminarUsuario($id);
+        if ($resp === 'ok') {
+            echo '<script>Swal.fire({title:"Eliminado", text:"Usuario eliminado correctamente", icon:"success"}).then(function(){ window.location = window.location.href; });</script>';
+        } else {
+            echo '<script>Swal.fire({title:"Error", text:"No se pudo eliminar el usuario", icon:"error"});</script>';
+        }
+    }
 }

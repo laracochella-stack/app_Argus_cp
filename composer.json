@@ -1,0 +1,18 @@
+{
+    "name": "vendor/composer",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\Composer\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "laracochella-stack",
+            "email": "laracochella@gmail.com"
+        }
+    ],
+    "require": {
+        "phpoffice/phpword": "^1.3",
+        "dompdf/dompdf": "^3.1"
+    }
+}

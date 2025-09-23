@@ -39,7 +39,7 @@ $tiposContratoList  = ControladorParametros::ctrMostrarVariables('tipo_contrato'
         <div class="icon"><i class="fas fa-city"></i></div>
       </div>
     </div>
-    <div class="col-lg-3 col-6"> 
+    <div class="col-lg-3 col-6">
       <a href="index.php?ruta=clientes" style="color:inherit;text-decoration:none;">
         <div class="small-box bg-warning">
           <div class="inner"><h4>Lista de clientes</h4></div>

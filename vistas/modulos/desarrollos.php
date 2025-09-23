@@ -7,6 +7,14 @@
 ControladorDesarrollos::ctrEditarDesarrollo();
 // Obtener todos los desarrollos para listarlos
 $desarrollos = ControladorDesarrollos::ctrMostrarDesarrollos();
+// Obtener listado de tipos de contrato para mapear identificador a nombre
+$listaTiposContrato = [];
+if (class_exists('ControladorParametros')) {
+    $varsTipo = ControladorParametros::ctrMostrarVariables('tipo_contrato');
+    foreach ($varsTipo as $var) {
+        $listaTiposContrato[$var['identificador']] = $var['nombre'];
+    }
+}
 ?>
 <section class="content-header">
   <div class="container-fluid">
@@ -25,13 +33,14 @@ $desarrollos = ControladorDesarrollos::ctrMostrarDesarrollos();
             <tr>
               <td><?php echo $des['id']; ?></td>
               <td><?php echo htmlspecialchars($des['nombre']); ?></td>
-              <td><?php echo htmlspecialchars($des['tipo_contrato']); ?></td>
+              <td><?php echo htmlspecialchars($listaTiposContrato[$des['tipo_contrato']] ?? $des['tipo_contrato']); ?></td>
               <td>
                 <!-- Botón ver -->
                 <button type="button" class="btn btn-warning btn-sm btnVerDesarrollo" data-bs-toggle="modal" data-bs-target="#modalVerDesarrollo"
                     data-id="<?php echo $des['id']; ?>"
                     data-nombre="<?php echo htmlspecialchars($des['nombre'], ENT_QUOTES); ?>"
-                    data-tipocontrato="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
+                    data-tipocontrato-id="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
+                    data-tipocontrato-nombre="<?php echo htmlspecialchars($listaTiposContrato[$des['tipo_contrato']] ?? $des['tipo_contrato'], ENT_QUOTES); ?>"
                     data-descripcion="<?php echo htmlspecialchars($des['descripcion'], ENT_QUOTES); ?>"
                     data-superficie="<?php echo htmlspecialchars($des['superficie'], ENT_QUOTES); ?>"
                     data-clave="<?php echo htmlspecialchars($des['clave_catastral'], ENT_QUOTES); ?>"
@@ -44,7 +53,8 @@ $desarrollos = ControladorDesarrollos::ctrMostrarDesarrollos();
                 <button type="button" class="btn btn-primary btn-sm btnEditarDesarrollo" data-bs-toggle="modal" data-bs-target="#modalEditarDesarrollo"
                     data-id="<?php echo $des['id']; ?>"
                     data-nombre="<?php echo htmlspecialchars($des['nombre'], ENT_QUOTES); ?>"
-                    data-tipocontrato="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
+                    data-tipocontrato-id="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
+                    data-tipocontrato-nombre="<?php echo htmlspecialchars($listaTiposContrato[$des['tipo_contrato']] ?? $des['tipo_contrato'], ENT_QUOTES); ?>"
                     data-descripcion="<?php echo htmlspecialchars($des['descripcion'], ENT_QUOTES); ?>"
                     data-superficie="<?php echo htmlspecialchars($des['superficie'], ENT_QUOTES); ?>"
                     data-clave="<?php echo htmlspecialchars($des['clave_catastral'], ENT_QUOTES); ?>"
@@ -83,8 +93,11 @@ $desarrollos = ControladorDesarrollos::ctrMostrarDesarrollos();
             <div class="col-md-6">
               <label class="form-label">Tipo de contrato</label>
               <select class="form-select" name="tipo_contrato" id="editarTipoContrato" required>
-                <option value="CONTRATO DE CESION ONEROSA DE DERECHOS PARCELARIOS">CONTRATO DE CESIÓN ONEROSA DE DERECHOS PARCELARIOS</option>
-                <option value="CONTRATO DE PROMESA DE COMPRAVENTA">CONTRATO DE PROMESA DE COMPRAVENTA</option>
+                <?php foreach ($listaTiposContrato as $iden => $nom) : ?>
+                  <option value="<?php echo htmlspecialchars($iden, ENT_QUOTES); ?>">
+                    <?php echo htmlspecialchars($nom); ?>
+                  </option>
+                <?php endforeach; ?>
               </select>
             </div>
             <div class="col-12">
