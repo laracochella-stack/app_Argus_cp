@@ -111,6 +111,10 @@ $desarrollos = ControladorDesarrollos::ctrMostrarDesarrollos();
               <label class="form-label">Beneficiario</label>
               <input type="text" class="form-control text-uppercase" name="cliente_beneficiario" required placeholder="ej. nombre (parentezco)" oninput="this.value = this.value.toUpperCase();">
             </div>
+            <div class="col-md-12">
+              <label class="form-label">Referencias personales</label>
+              <input type="text" class="form-control text-uppercase" name="cliente_referencias" required placeholder="Min. 2" oninput="this.value = this.value.toUpperCase();">
+            </div>
           </div>
 
           <!-- Sección de datos del desarrollo -->
@@ -198,7 +202,7 @@ $desarrollos = ControladorDesarrollos::ctrMostrarDesarrollos();
               </div>
             </div>
             <!-- Campos financieros existentes -->
-             <div class="col-md-3">
+             <div class="col-md-3 ">
               <label class="form-label">Meses del financiamiento</label>              
               <input type="number" class="form-control" name="mensualidades" min="1" placeholder="ej. 6" required>              
             </div>

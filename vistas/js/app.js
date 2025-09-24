@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const penalizacion = document.getElementById('penalizacion');
     const penalizacionFixed = document.getElementById('penalizacionFixed');
 
-    /**
+    /*
      * Convierte un número a letras solicitando al backend el resultado.
      * Actualiza el input oculto asociado con el resultado devuelto.
      * Si el número no es válido, se limpia el input de destino.
@@ -469,12 +469,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
+    /*
      * Actualiza los campos derivados (saldo y penalización) en tiempo real
      * para el formulario de creación de contratos. Calcula saldo como
      * monto - enganche y penalización como 10% del monto. También
      * actualiza los campos ocultos con las cantidades en letras.
-     *//*
+     
     function actualizarCalculosContrato() {
         const montoVal = parseFloat(montoInmueble && montoInmueble.value ? montoInmueble.value : 0) || 0;
         const engancheVal = parseFloat(enganche && enganche.value ? enganche.value : 0) || 0;
@@ -490,12 +490,13 @@ document.addEventListener('DOMContentLoaded', () => {
         convertirNumeroALetras(engancheVal, engancheFixed);
         convertirNumeroALetras(saldoVal, saldoPagoFixed);
         convertirNumeroALetras(penalVal, penalizacionFixed);
-    }*/
+    }
+    */
     function actualizarCalculosContrato() {
         const montoVal = Math.round(parseFloat(montoInmueble && montoInmueble.value ? montoInmueble.value : 0) || 0);
         const engancheVal = Math.round(parseFloat(enganche && enganche.value ? enganche.value : 0) || 0);
         const saldoVal = Math.round(montoVal - engancheVal);
-        const penalVal = Math.round(montoVal * 0.10);
+        const penalVal = Math.round(montoVal * 0.20);
 
         if (saldoPago) {
             saldoPago.value = saldoVal; // entero
@@ -1080,7 +1081,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editarRangoPagoInicio = document.getElementById('editarRangoPagoInicio');
         const editarRangoPagoFin    = document.getElementById('editarRangoPagoFin');
 
-        /**
+        /*
          * Actualiza saldo y penalización en tiempo real para la edición de contratos.
          */
         function actualizarCalculosEditar() {
@@ -1467,15 +1468,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
+    /*
      * === Gestión de formulario Crear Contrato (página completa) ===
      * Este bloque se activa en la página crearContrato.php. Maneja la selección del desarrollo,
      * muestra el tipo de contrato y superficie, gestiona la selección de fracciones (lotes) y
      * permite al usuario agregar manualmente fracciones como etiquetas. También actualiza en tiempo
      * real los cálculos financieros (saldo y penalización) y convierte los números a letras para
      * los campos "fixed" utilizando el servicio AJAX numero_a_letras.php.
-     */
-    /**
      * Configuración de la página Crear contrato. Esta sección gestiona la
      * selección de desarrollo, la carga de lotes disponibles, el ingreso de
      * fracciones manuales y las operaciones aritméticas y de conversión
@@ -1618,7 +1617,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const montoVal    = parseFloat(crearMontoInmueble && crearMontoInmueble.value ? crearMontoInmueble.value : 0) || 0;
                 const engancheVal = parseFloat(crearEnganche && crearEnganche.value ? crearEnganche.value : 0) || 0;
                 const saldoVal    = montoVal - engancheVal;
-                const penalVal    = montoVal * 0.10;
+                const penalVal    = montoVal * 0.20;
                 if (crearSaldoPago) {
                     crearSaldoPago.value = saldoVal.toFixed(2);
                 }
@@ -1645,8 +1644,36 @@ document.addEventListener('DOMContentLoaded', () => {
     (function confirmarEnvioCrearContrato() {
         const formCrear = document.getElementById('formCrearContratoCompleto');
         if (formCrear) {
+            formCrear.setAttribute('novalidate', true);
+
             formCrear.addEventListener('submit', function (e) {
                 e.preventDefault();
+
+                // 🔎 Validación manual de campos
+                let esValido = true;
+                Array.from(formCrear.elements).forEach(field => {
+                    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(field.tagName)) return;
+
+                    if (!field.checkValidity()) {
+                        field.classList.remove('is-valid');
+                        field.classList.add('is-invalid');
+                        esValido = false;
+                    } else {
+                        field.classList.remove('is-invalid');
+                        field.classList.add('is-valid');
+                    }
+                });
+
+                if (!esValido) {
+                    Swal.fire({
+                        title: 'Campos incompletos',
+                        text: 'Por favor complete todos los campos obligatorios antes de enviar.',
+                        icon: 'error'
+                    });
+                    return; // 🚫 Detenemos aquí si no es válido
+                }
+
+                // ✅ Si todo es válido → confirmación
                 Swal.fire({
                     title: 'Confirmar envío',
                     text: 'Verifique que la información capturada es correcta antes de continuar.',
@@ -1655,24 +1682,48 @@ document.addEventListener('DOMContentLoaded', () => {
                     confirmButtonText: 'Sí, enviar',
                     cancelButtonText: 'Revisar información'
                 }).then((result) => {
-                    if (result.isConfirmed) {                        
-                        formCrear.submit();
-                        let title = 'Guardado';
-                        let text = 'Contrato actualizado correctamente.';
-                        let icon = 'success';
-                        if (resp.includes('error')) {
-                            title = 'Error';
-                            text = 'No se pudo actualizar.';
-                            icon = 'error';
-                        }
-                        Swal.fire(title, text, icon).then(() => {
-                            window.location.reload();
+                    if (result.isConfirmed) {
+                        const formData = new FormData(formCrear);
+                        const url = formCrear.getAttribute('action');
+
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(r => r.text())
+                        .then(resp => {
+                            let title = 'Guardado';
+                            let text = 'Contrato creado correctamente.';
+                            let icon = 'success';
+
+                            if (resp.includes('error')) {
+                                title = 'Error';
+                                text = 'No se pudo crear el contrato.';
+                                icon = 'error';
+                            } else if (!resp.includes('ok')) {
+                                title = 'Aviso';
+                                text = 'Respuesta inesperada: ' + resp;
+                                icon = 'info';
+                            }
+
+                            Swal.fire(title, text, icon).then(() => {
+                                if (icon === 'success') {
+                                    window.location.reload(); // 🔄 recarga solo si todo salió bien
+                                }
+                            });
+                        })
+                        .catch(() => {
+                            Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
                         });
+                    } else {
+                        Swal.fire('Continúe editando', '', 'info');
                     }
                 });
             });
         }
     })();
+
+
 
    
 
@@ -1770,7 +1821,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
-    })();*/
+    })();
+    */
 
     /*
      * ACTUALIZAR FECHA DE CONTRATO FIJA
@@ -1948,6 +2000,56 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         })();
+
+        // === Calcular meses automáticamente según rango de fechas ===
+        (function () {
+            const inicioInput = document.getElementById('rangoPagoInicio');
+            const finInput = document.getElementById('rangoPagoFin');
+            const mensualidadesInput = document.querySelector('input[name="mensualidades"]');
+            const rangoAniosInput = document.getElementById('crearRangoPago');
+
+            if (inicioInput && finInput && mensualidadesInput) {
+                function calcularMeses() {
+                    const inicioVal = inicioInput.value;
+                    const finVal = finInput.value;
+                    if (!inicioVal || !finVal) return;
+
+                    const inicio = new Date(inicioVal);
+                    const fin = new Date(finVal);
+
+                    if (isNaN(inicio) || isNaN(fin) || fin < inicio) return;
+
+                    // Calcular diferencia en meses
+                    let meses = (fin.getFullYear() - inicio.getFullYear()) * 12;
+                    meses += fin.getMonth() - inicio.getMonth();
+
+                    // Ajustar si el día de fin es menor al de inicio (ej. 15 ene a 10 feb → cuenta como 0 meses completos)
+                    if (fin.getDate() < inicio.getDate()) {
+                        meses -= 1;
+                    }
+
+                    if (meses < 1) meses = 1; // mínimo 1 mes
+                    mensualidadesInput.value = meses;
+
+                    // Actualizar rango en años/meses (ej. "2 AÑOS, 6 MESES")
+                    if (rangoAniosInput) {
+                        const anios = Math.floor(meses / 12);
+                        const restoMeses = meses % 12;
+                        let texto = "";
+                        if (anios > 0) texto += anios + (anios === 1 ? " AÑO" : " AÑOS");
+                        if (restoMeses > 0) {
+                            if (texto) texto += " ";
+                            texto += restoMeses + (restoMeses === 1 ? " MES" : " MESES");
+                        }
+                        rangoAniosInput.value = texto || "1 MES";
+                    }
+                }
+
+                inicioInput.addEventListener('change', calcularMeses);
+                finInput.addEventListener('change', calcularMeses);
+            }
+        })();
+
 
 
 

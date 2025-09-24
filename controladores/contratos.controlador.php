@@ -174,7 +174,8 @@ class ControladorContratos
         $clienteDomicilio     = isset($_POST['cliente_domicilio']) ? strtoupper(trim($_POST['cliente_domicilio'])) : '';
         $clienteEmail         = isset($_POST['cliente_email']) ? trim($_POST['cliente_email']) : '';
         $clienteBeneficiario  = isset($_POST['cliente_beneficiario']) ? strtoupper(trim($_POST['cliente_beneficiario'])) : '';
-        // Función para convertir una fecha YYYY-MM-DD a "DD de Mes de YYYY"
+        $clienteReferencias   = isset($_POST['cliente_referencias']) ? strtoupper(trim($_POST['cliente_referencias'])) : '';
+        // Función para convertir una fecha YYYY-MM-DD a "DD de Mes de YYYY cliente_referencias"
         $formatearFechaLarga = function ($fecha) {
             if (!$fecha) return '';
             $meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -206,7 +207,9 @@ class ControladorContratos
             'email'        => $clienteEmail,
             'beneficiario' => $clienteBeneficiario,
             // Edad calculada del cliente
-            'edad'         => isset($_POST['cliente_edad']) ? intval($_POST['cliente_edad']) : ''
+            'edad'         => isset($_POST['cliente_edad']) ? intval($_POST['cliente_edad']) : '',
+            'referencias'  => $clienteReferencias
+
         ];
         // Insertar cliente y obtener ID
         $clienteId = ModeloClientes::mdlAgregarClienteRetId($datosCliente);
@@ -289,7 +292,7 @@ class ControladorContratos
             $entero = floor($numero); // tomamos solo la parte entera
             $letras = strtoupper($formatter->format($entero));
 
-            return $numero . " (" . $letras . " METROS CUADRADOS)";
+            return $numero . " (" . $letras . "M2 METROS CUADRADOS)";
         };
 
 
@@ -741,6 +744,8 @@ class ControladorContratos
         'CLIENTE_EMAIL'              => $cliente['email'] ?? '',
         'CLIENTE_BENEFICIARIO'       => $cliente['beneficiario'] ?? '',
         'CLIENTE_EDAD'               => $cliente['edad'] ?? '',
+        'CLIENTE_REFERENCIA'         => $cliente['referencias'] ?? '',
+            
 
         // Desarrollo
         'DESARROLLO_ID'              => $desarrollo['id'] ?? '',
