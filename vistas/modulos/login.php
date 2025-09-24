@@ -6,7 +6,7 @@
 <div class="login-page" style="min-height:100vh; display:flex; justify-content:center; align-items:center;">
   <div class="login-box">
     <div class="login-logo">
-      <b>Argus</b> CRM
+      <b>Contratos </b> GrupoArgus
     </div>
     <div class="card">
       <div class="card-body login-card-body">

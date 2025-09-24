@@ -36,20 +36,21 @@
 /* Ajustar tamaño de iconos y texto en los cuadros del panel de control */
 /* Ajustar tamaño de iconos y texto en los cuadros del panel de control */
 /* Ajustar tamaño de icono y contenedor en los cuadros del panel de control */
+.small-box {
+    position: relative; /* importante */
+    overflow: hidden;   /* opcional, para que nada se salga */
+}
 .small-box .icon {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
-    width: 40px;
-    height: 40px;
+    width: 100px;
+    height: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.small-box .icon i {
-    font-size: 1.5rem;
-    line-height: 1;
-}
+
 .small-box .inner h4 {
     font-size: 1rem;
     margin: 0;

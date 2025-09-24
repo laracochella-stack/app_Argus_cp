@@ -4,8 +4,10 @@
  * Muestra una tabla con los desarrollos registrados y permite editarlos mediante un modal.
  */
 // Procesar edición de desarrollo si se envía el formulario
+ControladorDesarrollos::ctrAgregarDesarrollo();
 ControladorDesarrollos::ctrEditarDesarrollo();
 // Obtener todos los desarrollos para listarlos
+$tiposContratoList  = ControladorParametros::ctrMostrarVariables('tipo_contrato');
 $desarrollos = ControladorDesarrollos::ctrMostrarDesarrollos();
 // Obtener listado de tipos de contrato para mapear identificador a nombre
 $listaTiposContrato = [];
@@ -20,7 +22,14 @@ if (class_exists('ControladorParametros')) {
   <div class="container-fluid">
     <h1>Desarrollos</h1>
   </div>
+  
 </section>
+<div class="col-lg-3 col-6">
+      <div class="small-box bg-success" style="cursor:pointer;" data-bs-toggle="modal" data-bs-target="#modalNuevoDesarrollo">
+        <div class="inner"><h4>Crear desarrollo</h4></div>
+        
+      </div>
+    </div>
 <section class="content">
   <div class="container-fluid">
     <div class="card">
@@ -193,6 +202,82 @@ if (class_exists('ControladorParametros')) {
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal nuevo desarrollo -->
+<div class="modal fade" id="modalNuevoDesarrollo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <form id="formDesarrollo" method="post" action="index.php?ruta=inicio&accion=agregarDesarrollo">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+        <div class="modal-header">
+          <h5 class="modal-title">Crear desarrollo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nombre del desarrollo</label>
+              <input type="text" class="form-control" name="nombre_desarrollo" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Tipo de contrato</label>
+              <select class="form-select" name="tipo_contrato" required>
+                <option value="" disabled selected>Seleccione</option>
+                <?php if (!empty($tiposContratoList)) : ?>
+                  <?php foreach ($tiposContratoList as $tipo) : ?>
+                    <option value="<?php echo htmlspecialchars($tipo['identificador'], ENT_QUOTES); ?>">
+                      <?php echo htmlspecialchars($tipo['nombre']); ?>
+                    </option>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Ubicación y descripción</label>
+              <textarea class="form-control" name="descripcion" rows="2" required></textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Superficie</label>
+              <input type="text" class="form-control" name="superficie" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Clave catastral</label>
+              <input type="text" class="form-control" name="clave_catastral" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Lotes disponibles</label>
+              <!-- Campo para ingresar lotes individuales. El usuario escribe un lote y presiona Enter para agregarlo -->
+              <input type="text" class="form-control" id="inputLoteNuevo" placeholder="Ingresa un lote y presiona Enter">
+              <!-- Contenedor donde se mostrarán las etiquetas de lotes ingresados -->
+              <div id="contenedorLotesNuevo" class="mt-2"></div>
+              <!-- Input oculto que contendrá el arreglo JSON con los lotes -->
+              <input type="hidden" name="lotes_disponibles" id="lotesDisponiblesNuevo">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Precio por lote</label>
+              <!-- Agrupamos el campo con un prefijo para mostrar el símbolo de pesos -->
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="text" class="form-control" name="precio_lote" id="crearPrecioLote" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Precio total</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="text" class="form-control" name="precio_total" id="crearPrecioTotal" required>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
     </div>
   </div>
 </div>

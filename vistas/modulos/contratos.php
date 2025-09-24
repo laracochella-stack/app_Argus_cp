@@ -8,7 +8,7 @@
 // Obtener ID de cliente si se pasa por la URL
 $clienteId = isset($_GET['cliente_id']) ? intval($_GET['cliente_id']) : null;
 // Procesar edición de contrato
-ControladorContratos::ctrEditarContrato();
+//ControladorContratos::ctrEditarContrato();
 // Obtener lista de contratos
 $contratos = ControladorContratos::ctrMostrarContratos($clienteId);
 // Generar listas únicas de desarrollos y tipos para filtros
@@ -71,11 +71,13 @@ foreach ($varsTipoContrato as $var) {
             <thead>
               <tr>
                 <th>ID</th>
+                <th>Creado el</th>
+                <th>Folio</th>
                 <th>Cliente</th>
                 <th>Desarrollo</th>
-                <th>Tipo contrato</th>
-                <th>Mensualidades</th>
-                <th>Folio</th>
+                <!--<th>Tipo de contrato</th>-->
+                
+                
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -83,13 +85,15 @@ foreach ($varsTipoContrato as $var) {
               <?php foreach ($contratos as $ct) : ?>
               <tr>
                 <td><?php echo $ct['id']; ?></td>
+                <td><?php echo htmlspecialchars($ct['created_at']); ?></td>
+                <td><?php echo htmlspecialchars($ct['folio'] ?? ''); ?></td>
                 <td><?php echo htmlspecialchars($ct['nombre_cliente']); ?></td>
                 <td><?php echo htmlspecialchars($ct['nombre_desarrollo']); ?></td>
-                <td><?php echo htmlspecialchars($mapTiposContrato[$ct['tipo_contrato']] ?? $ct['tipo_contrato']); ?></td>
-                <td><?php echo htmlspecialchars($ct['mensualidades']); ?></td>
-                <td><?php echo htmlspecialchars($ct['folio'] ?? ''); ?></td>
+                <!--<td><?php echo htmlspecialchars($mapTiposContrato[$ct['tipo_contrato']] ?? $ct['tipo_contrato']); ?></td>-->
+                
+                
                 <td>
-                  <!-- Botón editar contrato -->
+                  <!-- Botón editar contrato 
                     <button type="button" class="btn btn-primary btn-sm btnEditarContrato" data-bs-toggle="modal" data-bs-target="#modalEditarContrato"
                     data-contrato-id="<?php echo $ct['id']; ?>"
                     data-mensualidades="<?php echo htmlspecialchars($ct['mensualidades']); ?>"
@@ -120,7 +124,7 @@ foreach ($varsTipoContrato as $var) {
                     data-fecha-contrato="<?php echo htmlspecialchars($ct['fecha_contrato'] ?? '', ENT_QUOTES); ?>"
                     data-fecha-contrato-fixed="<?php echo htmlspecialchars($ct['fecha_contrato_fixed'] ?? '', ENT_QUOTES); ?>">
                     <i class="fas fa-pencil-alt"></i>
-                  </button>
+                  </button>-->
                   <!-- Botón generar documento -->
                   <button type="button"
                           class="btn btn-success btn-sm btnGenerarContrato"

@@ -48,8 +48,7 @@
             <p>Parámetros</p>
           </a>
         </li>
-        <?php endif; ?>
-        <?php if (($_SESSION['permission'] ?? '') === 'admin') : ?>
+        
         <li class="nav-item">
           <a href="index.php?ruta=roles" class="nav-link">
             <i class="nav-icon fas fa-user-shield"></i>

@@ -19,8 +19,11 @@ class ControladorContratos
      * Crea un nuevo contrato para un cliente. Procesa el formulario de creación
      * enviado desde la vista. Devuelve una cadena indicando 'ok' o 'error'.
      */
+    
     static public function ctrCrearContrato()
     {
+        // Verificar que se envió el formulario correcto
+        
         if (!isset($_POST['crearContrato'])) {
             return;
         }
@@ -139,21 +142,24 @@ class ControladorContratos
      * El formulario envía un campo oculto "crearContratoCompleto" para
      * asegurar que sólo se ejecute en la página correcta.
      */
-    /*
-    static public function ctrCrearContratoCompletoLegacy()
+    
+    static public function ctrCrearContratoCompleto()
     {
         if (!isset($_POST['crearContratoCompleto'])) {
             return;
+            
         }
         // Debe haber sesión iniciada
         if (!isset($_SESSION['iniciarSesion']) || $_SESSION['iniciarSesion'] !== 'ok') {
             echo 'error-sesion';
             return;
+            exit;
         }
         // Validar token CSRF
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
             echo 'error-token';
             return;
+            exit;
         }
         // ----- Datos del cliente -----
         $clienteNombre        = isset($_POST['cliente_nombre']) ? strtoupper(trim($_POST['cliente_nombre'])) : '';
@@ -168,11 +174,28 @@ class ControladorContratos
         $clienteDomicilio     = isset($_POST['cliente_domicilio']) ? strtoupper(trim($_POST['cliente_domicilio'])) : '';
         $clienteEmail         = isset($_POST['cliente_email']) ? trim($_POST['cliente_email']) : '';
         $clienteBeneficiario  = isset($_POST['cliente_beneficiario']) ? strtoupper(trim($_POST['cliente_beneficiario'])) : '';
+        // Función para convertir una fecha YYYY-MM-DD a "DD de Mes de YYYY"
+        $formatearFechaLarga = function ($fecha) {
+            if (!$fecha) return '';
+            $meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+            $partes = explode('-', $fecha);
+            if (count($partes) === 3) {
+                $anio = $partes[0];
+                $mes  = (int)$partes[1];
+                $dia  = (int)$partes[2];
+                $mesNombre = $meses[$mes - 1] ?? '';
+                return $dia . ' DE ' . ucfirst($mesNombre) . ' DE ' . $anio;
+            }
+            return $fecha;
+        };
+        // Convertir fechas
+        $clienteFechaNacLomng  = $formatearFechaLarga($clienteFechaNac);
+        
         // Construir arreglo de cliente para guardar
         $datosCliente = [
             'nombre'       => $clienteNombre,
             'nacionalidad' => $clienteNacionalidad,
-            'fecha'        => $clienteFechaNac,
+            'fecha'        => $clienteFechaNacLomng,
             'rfc'          => $clienteRfc,
             'curp'         => $clienteCurp,
             'ine'          => $clienteIne,
@@ -191,6 +214,7 @@ class ControladorContratos
             echo 'error';
             return;
         }
+
         // ----- Datos del desarrollo -----
         $desarrolloId = isset($_POST['desarrollo_id']) ? intval($_POST['desarrollo_id']) : 0;
         $desarrolloData = ModeloDesarrollos::mdlMostrarDesarrolloPorId($desarrolloId);
@@ -239,6 +263,7 @@ class ControladorContratos
         $penalizacion10        = isset($_POST['penalizacion']) ? floatval($_POST['penalizacion']) : 0;
         $penalizacionFixed     = isset($_POST['penalizacion_fixed']) ? trim($_POST['penalizacion_fixed']) : '';
         $vigenciaPagareRaw     = isset($_POST['vigencia_pagare']) ? trim($_POST['vigencia_pagare']) : '';
+        $rangoPago        = isset($_POST['rango_pago']) ? trim($_POST['rango_pago']) : '';
         // Superficie fija en texto (convertida en el frontend)
         $superficieFixed       = isset($_POST['superficie_fixed']) ? trim($_POST['superficie_fixed']) : '';
         // Nuevo: pago mensual y su versión fija
@@ -255,20 +280,20 @@ class ControladorContratos
                 $diaInicio = intval($partesFecha[2]);
             }
         }
-        // Función para convertir una fecha YYYY-MM-DD a "DD de Mes de YYYY"
-        $formatearFechaLarga = function ($fecha) {
-            if (!$fecha) return '';
-            $meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-            $partes = explode('-', $fecha);
-            if (count($partes) === 3) {
-                $anio = $partes[0];
-                $mes  = (int)$partes[1];
-                $dia  = (int)$partes[2];
-                $mesNombre = $meses[$mes - 1] ?? '';
-                return $dia . ' de ' . ucfirst($mesNombre) . ' de ' . $anio;
-            }
-            return $fecha;
+
+        // Convertir número a letras para superficie (requiere extensión intl habilitada)
+        $numeroASuperficie = function ($numero) {
+            if (!class_exists('NumberFormatter')) return $numero;
+            $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
+
+            $entero = floor($numero); // tomamos solo la parte entera
+            $letras = strtoupper($formatter->format($entero));
+
+            return $numero . " (" . $letras . " METROS CUADRADOS)";
         };
+
+
+        
         // Convertir fechas
         $entregaLong  = $formatearFechaLarga($entregaPosecion);
         $firmaLong    = $formatearFechaLarga($fechaFirma);
@@ -276,7 +301,7 @@ class ControladorContratos
         $vigenciaLong = $formatearFechaLarga($vigenciaPagareRaw);
         $rangoInicio  = $formatearFechaLarga($rangoInicioRaw);
         $rangoFin     = $formatearFechaLarga($rangoFinRaw);
-        $rangoPago    = ($rangoInicio && $rangoFin) ? ($rangoInicio . ' a ' . $rangoFin) : ($rangoInicio ?: $rangoFin);
+        //$rangoPago    = ($rangoInicio && $rangoFin) ? ($rangoInicio . ' A ' . $rangoFin) : ($rangoInicio ?: $rangoFin);
         // Convertir fecha del contrato a formato largo
         $fechaContratoLong = $formatearFechaLarga($fechaContrato);
         // Construir detalle del contrato
@@ -284,7 +309,7 @@ class ControladorContratos
             'folio'                      => $folio,
             'mensualidades'              => $mensualidades,
             'superficie'                 => $superficie,
-            'superficie_fixed'           => $superficieFixed,
+            'superficie_fixed'              => $numeroASuperficie($superficie),
             'fraccion_vendida'           => $fraccion,
             'entrega_posecion'           => $entregaLong,
             'fecha_firma_contrato'       => $firmaLong,
@@ -328,10 +353,25 @@ class ControladorContratos
             'datta_contrato' => $jsonData
         ];
         $resp = ModeloContratos::mdlCrearContrato($datosContrato);
+
+    // 🔑 Enviar respuesta limpia para fetch
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) 
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+            
+            header('Content-Type: application/json');
+            if ($resp === 'ok') {
+                echo json_encode(['status' => 'ok', 'message' => 'Contrato creado correctamente']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'No se pudo crear el contrato']);
+            }
+            exit; // 🚨 evitar que siga renderizando vistas
+        }
+
+        // Si no es AJAX, se comporta como antes
         echo $resp;
     }
 
-    /**
+    /*
      * Obtiene los datos de un contrato existente para un cliente específico.
      * Devuelve un array asociativo con los datos o null si no existe.
      *
@@ -437,7 +477,7 @@ class ControladorContratos
      * Edita un contrato existente. Procesa el formulario de edición de contrato
      * enviado desde la vista. Se identifica el contrato por su ID y se guarda
      * un nuevo JSON con los datos actualizados.
-     */
+     *//*
     static public function ctrEditarContrato()
     {
         if (!isset($_POST['editarContrato'])) {
@@ -597,7 +637,7 @@ class ControladorContratos
         ], JSON_UNESCAPED_UNICODE);
         $respuesta = ModeloContratos::mdlEditarContrato($contratoId, $jsonData);
         echo $respuesta;
-    }
+    }*/
 
     /**
      * Genera un documento de contrato en formato DOCX y PDF a partir del registro
@@ -687,64 +727,64 @@ class ControladorContratos
 
         // Construir arreglo de reemplazos para placeholders
         $placeholders = [
-            // ============================
-            // CLIENTE
-            // ============================
-            'CLIENTE_NOMBRE'           => $cliente['nombre'] ?? '',
-            'CLIENTE_NACIONALIDAD'     => $cliente['nacionalidad'] ?? '',
-            'CLIENTE_FECHA'            => $cliente['fecha'] ?? '', // antes tenías fecha_nacimiento
-            'CLIENTE_RFC'              => $cliente['rfc'] ?? '',
-            'CLIENTE_CURP'             => $cliente['curp'] ?? '',
-            'CLIENTE_INE'              => $cliente['ine'] ?? '',
-            'CLIENTE_ESTADO_CIVIL'     => $cliente['estado_civil'] ?? '',
-            'CLIENTE_OCUPACION'        => $cliente['ocupacion'] ?? '',
-            'CLIENTE_TELEFONO'         => $cliente['telefono'] ?? '',
-            'CLIENTE_DOMICILIO'        => $cliente['domicilio'] ?? '',
-            'CLIENTE_EMAIL'            => $cliente['email'] ?? '',
-            'CLIENTE_BENEFICIARIO'     => $cliente['beneficiario'] ?? '',
-            'CLIENTE_EDAD'             => $cliente['edad'] ?? '',
+        // Cliente
+        'CLIENTE_NOMBRE'             => $cliente['nombre'] ?? '',
+        'CLIENTE_NACIONALIDAD'       => $cliente['nacionalidad'] ?? '',
+        'CLIENTE_FECHA'              => $cliente['fecha'] ?? '',
+        'CLIENTE_RFC'                => $cliente['rfc'] ?? '',
+        'CLIENTE_CURP'               => $cliente['curp'] ?? '',
+        'CLIENTE_INE'                => $cliente['ine'] ?? '',
+        'CLIENTE_ESTADO_CIVIL'       => $cliente['estado_civil'] ?? '',
+        'CLIENTE_OCUPACION'          => $cliente['ocupacion'] ?? '',
+        'CLIENTE_TELEFONO'           => $cliente['telefono'] ?? '',
+        'CLIENTE_DOMICILIO'          => $cliente['domicilio'] ?? '',
+        'CLIENTE_EMAIL'              => $cliente['email'] ?? '',
+        'CLIENTE_BENEFICIARIO'       => $cliente['beneficiario'] ?? '',
+        'CLIENTE_EDAD'               => $cliente['edad'] ?? '',
 
-            // ============================
-            // DESARROLLO
-            // ============================
-            'DESARROLLO_NOMBRE'        => $desarrollo['nombre'] ?? '',
-            'DESARROLLO_TIPO_CONTRATO' => $desarrollo['tipo_contrato'] ?? '',
-            'DESARROLLO_DESCRIPCION'   => $desarrollo['descripcion'] ?? '',
-            'DESARROLLO_SUPERFICIE'    => $desarrollo['superficie'] ?? '',
-            'DESARROLLO_CLAVE_CATASTRAL' => $desarrollo['clave_catastral'] ?? '',
-            'DESARROLLO_LOTES_DISPONIBLES' => $desarrollo['lotes_disponibles'] ?? '',
-            'DESARROLLO_PRECIO_LOTE'   => $desarrollo['precio_lote'] ?? '',
-            'DESARROLLO_PRECIO_TOTAL'  => $desarrollo['precio_total'] ?? '',
+        // Desarrollo
+        'DESARROLLO_ID'              => $desarrollo['id'] ?? '',
+        'DESARROLLO_NOMBRE'          => $desarrollo['nombre'] ?? '',
+        'DESARROLLO_TIPO_CONTRATO'   => $desarrollo['tipo_contrato'] ?? '',
+        'DESARROLLO_DESCRIPCION'     => $desarrollo['descripcion'] ?? '',
+        'DESARROLLO_SUPERFICIE'      => $desarrollo['superficie'] ?? '',
+        'DESARROLLO_CLAVE_CATASTRAL' => $desarrollo['clave_catastral'] ?? '',
+        'DESARROLLO_LOTES'           => $desarrollo['lotes_disponibles'] ?? '',
+        'DESARROLLO_PRECIO_LOTE'     => $desarrollo['precio_lote'] ?? '',
+        'DESARROLLO_PRECIO_TOTAL'    => $desarrollo['precio_total'] ?? '',
+        'DESARROLLO_CREATED_AT'      => $desarrollo['created_at'] ?? '',
 
-            // ============================
-            // CONTRATO
-            // ============================
-            'CONTRATO_FOLIO'               => $contrato['folio'] ?? '',
-            'CONTRATO_FECHA_FIRMA'         => $contrato['fecha_firma_contrato'] ?? '',
-            'CONTRATO_FRACCION_VENDIDA'    => $contrato['fraccion_vendida'] ?? '',
-            'CONTRATO_SUPERFICIE'          => $contrato['superficie'] ?? '',
-            'CONTRATO_MONTO_PRECIO_INMUEBLE' => $contrato['monto_precio_inmueble'] ?? '',
-            'CONTRATO_MONTO_PRECIO_INMUEBLE_FIXED' => $contrato['monto_precio_inmueble_fixed'] ?? '',
-            'CONTRATO_ENGANCHE'            => $contrato['enganche'] ?? '',
-            'CONTRATO_ENGANCHE_FIXED'      => $contrato['enganche_fixed'] ?? '',
-            'CONTRATO_SALDO_PAGO'          => $contrato['saldo_pago'] ?? '',
-            'CONTRATO_SALDO_PAGO_FIXED'    => $contrato['saldo_pago_fixed'] ?? '',
-            'CONTRATO_MENSUALIDADES'       => $contrato['mensualidades'] ?? '',
-            'CONTRATO_PAGO_MENSUAL'        => $contrato['pago_mensual'] ?? '',
-            'CONTRATO_PAGO_MENSUAL_FIXED'  => $contrato['pago_mensual_fixed'] ?? '',
-            'CONTRATO_INICIO_PAGOS'        => $contrato['inicio_pagos'] ?? '',
-            'CONTRATO_RANGO_PAGO'          => $contrato['rango_pago'] ?? '',
-            'CONTRATO_RANGO_PAGO_INICIO'   => $contrato['rango_pago_inicio'] ?? '',
-            'CONTRATO_RANGO_PAGO_FIN'      => $contrato['rango_pago_fin'] ?? '',
-            'CONTRATO_PARCIALIDADES_ANUALES' => $contrato['parcialidades_anuales'] ?? '',
-            'CONTRATO_PENALIZACION_10'     => $contrato['penalizacion_10'] ?? '',
-            'CONTRATO_PENALIZACION_10_FIXED' => $contrato['penalizacion_10_fixed'] ?? '',
-            'CONTRATO_ENTREGA_POSESION'    => $contrato['entrega_posecion'] ?? '',
-            'CONTRATO_HABITACIONAL_COLINDANCIAS' => $contrato['habitacional_colindancias'] ?? '',
-            'CONTRATO_FECHA_CONTRATO'      => $contrato['fecha_contrato'] ?? '',
-            'CONTRATO_FECHA_CONTRATO_FIXED'=> $contrato['fecha_contrato_fixed'] ?? '',
-            'CONTRATO_VIGENCIA_PAGARE'     => $contrato['vigencia_pagare'] ?? ''
-        ];
+        // Contrato
+        'CONTRATO_FOLIO'                 => $contrato['folio'] ?? '',
+        'CONTRATO_MENSUALIDADES'         => $contrato['mensualidades'] ?? '',
+        //'CONTRATO_SUPERFICIE'     => $contrato['superficie'] ?? '',
+        'CONTRATO_SUPERFICIE'            => $contrato['superficie_fixed'] ?? '',
+        'CONTRATO_FRACCION_VENDIDA'      => $contrato['fraccion_vendida'] ?? '',
+        'CONTRATO_ENTREGA_POSESION'      => $contrato['entrega_posecion'] ?? '',
+        'CONTRATO_FECHA_FIRMA'           => $contrato['fecha_firma_contrato'] ?? '',
+        'CONTRATO_COLINDANCIAS'          => $contrato['habitacional_colindancias'] ?? '',
+        'CONTRATO_INICIO_PAGOS'          => $contrato['inicio_pagos'] ?? '',
+        'CONTRATO_TIPO'                  => $contrato['tipo_contrato'] ?? '',
+        //'CONTRATO_MONTO'                 => $contrato['monto_precio_inmueble'] ?? '',
+        'CONTRATO_PRECIO_INMUEBLE'       => $contrato['monto_precio_inmueble_fixed'] ?? '',
+        //'CONTRATO_ENGANCHE'              => $contrato['enganche'] ?? '',
+        'CONTRATO_ENGANCHE'        => $contrato['enganche_fixed'] ?? '',
+        //'CONTRATO_SALDO'                 => $contrato['saldo_pago'] ?? '',
+        'CONTRATO_SALDO'           => $contrato['saldo_pago_fixed'] ?? '',
+        'CONTRATO_PARCIALIDADES_ANUALES' => $contrato['parcialidades_anuales'] ?? '',
+        'CONTRATO_PENALIZACION'          => $contrato['penalizacion_10'] ?? '',
+        'CONTRATO_PENALIZACION_FIXED'    => $contrato['penalizacion_10_fixed'] ?? '',
+        //'CONTRATO_PAGO_MENSUAL'          => $contrato['pago_mensual'] ?? '',
+        'CONTRATO_PAGO_MENSUAL'    => $contrato['pago_mensual_fixed'] ?? '',
+        'CONTRATO_FECHA_N'                 => $contrato['fecha_contrato'] ?? '',
+        'CONTRATO_FECHA_T'                 => $contrato['fecha_contrato_fixed'] ?? '',
+        'CONTRATO_INICIO_PAGO'          => $contrato['rango_pago_inicio'] ?? '',
+        'CONTRATO_FIN_PAGO'             => $contrato['rango_pago_fin'] ?? '',
+        'CONTRATO_RANGO'                 => $contrato['rango_pago'] ?? '',
+        'CONTRATO_DIA_INICIO'            => $contrato['dia_inicio'] ?? '',
+        'CONTRATO_VIGENCIA_PAGARE'       => $contrato['vigencia_pagare'] ?? ''
+    ];
+
 
 
         // Crear directorio temporal si no existe
@@ -806,8 +846,8 @@ class ControladorContratos
      * Este método recoge los datos de cliente y contrato enviados desde la ruta
      * crearContrato y los guarda en sus respectivas tablas. Devuelve cadenas
      * indicativas de éxito o error directamente al navegador.
-     */
-    static public function ctrCrearContratoCompleto()
+     *//*
+    static public function ctrCrearContratoCompletoLC()
     {
         if (!isset($_POST['crearContratoCompleto'])) {
             return;
@@ -889,7 +929,9 @@ class ControladorContratos
             'telefono'     => trim($_POST['telefono_cliente']),
             'domicilio'    => trim($_POST['domicilio_cliente']),
             'email'        => trim($_POST['email_cliente']),
-            'beneficiario' => trim($_POST['beneficiario_cliente'])
+            'beneficiario' => trim($_POST['beneficiario_cliente']),
+            // Edad calculada del cliente
+            'edad'         => isset($_POST['cliente_edad']) ? intval($_POST['cliente_edad']) : ''
         ];
         $clienteId = ModeloClientes::mdlAgregarClienteRetId($datosCliente);
         if (!$clienteId) {
@@ -978,6 +1020,6 @@ class ControladorContratos
 
         $res = ModeloContratos::mdlCrearContrato($datosContrato);
         echo $res;
-    }
+    }*/
 
 }

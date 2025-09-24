@@ -14,7 +14,7 @@ $num = isset($_POST['num']) ? floatval($_POST['num']) : 0;
 
 // Función para convertir número a letras utilizando NumberFormatter.
 // Si la extensión intl no está habilitada, devuelve el número tal cual.
-function numeroALetras($numero)
+/*function numeroALetras($numero)
 {
     // Verificar si la clase existe (extensión intl habilitada)
     if (class_exists('NumberFormatter')) {
@@ -22,7 +22,7 @@ function numeroALetras($numero)
             $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
             $letras = mb_strtoupper($formatter->format($numero));
             // Asegurar que la parte decimal siempre sea "00/100"
-            return $numero . ' (' . $letras . ' PESOS 00/100 M.N.)';
+            return ' (' . $letras . ' PESOS 00/100 M.N.)';
         } catch (Exception $e) {
             // En caso de error con NumberFormatter, regresar número
             return (string)$numero;
@@ -32,4 +32,39 @@ function numeroALetras($numero)
     return (string)$numero;
 }
 
+echo numeroALetras($num);*/
+
+function numeroALetras($numero)
+{
+    // Aceptar números con comas como separadores de miles (ej. "1,000.50")
+    $numero = str_replace(',', '', $numero); // eliminar comas
+    $numero = floatval($numero); // convertir a número decimal real
+
+    if (class_exists('NumberFormatter')) {
+        try {
+            $formatter = new NumberFormatter('es', NumberFormatter::SPELLOUT);
+
+            // Separar entero y decimales
+            $entero = floor($numero);
+            $decimales = round(($numero - $entero) * 100);
+
+            // Convertir solo la parte entera a letras
+            $letras = mb_strtoupper($formatter->format($entero));
+
+            // Formatear el número original con separadores y dos decimales
+            $numeroFormateado = number_format($numero, 2, '.', ',');
+
+            // Formatear los decimales como número (dos dígitos siempre)
+            $decimalesTxt = str_pad($decimales, 2, '0', STR_PAD_LEFT);
+
+            // Formato final
+            return '$' . $numeroFormateado . ' (' . $letras . ' PESOS ' . $decimalesTxt . '/100 M.N.)';
+        } catch (Exception $e) {
+            return (string)$numero;
+        }
+    }
+
+    // Fallback si no existe NumberFormatter
+    return number_format($numero, 2, '.', ',');
+}
 echo numeroALetras($num);

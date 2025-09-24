@@ -474,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * para el formulario de creación de contratos. Calcula saldo como
      * monto - enganche y penalización como 10% del monto. También
      * actualiza los campos ocultos con las cantidades en letras.
-     */
+     *//*
     function actualizarCalculosContrato() {
         const montoVal = parseFloat(montoInmueble && montoInmueble.value ? montoInmueble.value : 0) || 0;
         const engancheVal = parseFloat(enganche && enganche.value ? enganche.value : 0) || 0;
@@ -490,7 +490,26 @@ document.addEventListener('DOMContentLoaded', () => {
         convertirNumeroALetras(engancheVal, engancheFixed);
         convertirNumeroALetras(saldoVal, saldoPagoFixed);
         convertirNumeroALetras(penalVal, penalizacionFixed);
+    }*/
+    function actualizarCalculosContrato() {
+        const montoVal = Math.round(parseFloat(montoInmueble && montoInmueble.value ? montoInmueble.value : 0) || 0);
+        const engancheVal = Math.round(parseFloat(enganche && enganche.value ? enganche.value : 0) || 0);
+        const saldoVal = Math.round(montoVal - engancheVal);
+        const penalVal = Math.round(montoVal * 0.10);
+
+        if (saldoPago) {
+            saldoPago.value = saldoVal; // entero
+        }
+        if (penalizacion) {
+            penalizacion.value = penalVal; // entero
+        }
+
+        convertirNumeroALetras(montoVal, montoInmuebleFixed);
+        convertirNumeroALetras(engancheVal, engancheFixed);
+        convertirNumeroALetras(saldoVal, saldoPagoFixed);
+        convertirNumeroALetras(penalVal, penalizacionFixed);
     }
+
     if (montoInmueble) montoInmueble.addEventListener('input', actualizarCalculosContrato);
     if (enganche) enganche.addEventListener('input', actualizarCalculosContrato);
     // Campos para manejar fracciones como etiquetas en la creación de contratos
@@ -737,6 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadingRecords: "Cargando...",
         zeroRecords: "No se encontraron registros",
         emptyTable: "No hay datos disponibles",
+        
         paginate: {
             first: "Primero",
             previous: "Anterior",
@@ -795,7 +815,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const dataTableContratos = $tablaContratos.DataTable({
                 pageLength: 20,
                 language: esLang,
-                responsive: true
+                responsive: true,
+                order: [[1, 'dec']] // Ordenar por segunda columna (índice 1) descendente por defecto
             });
             // Filtros por desarrollo y tipo de contrato
             const filtroDesarrollo = document.getElementById('filtroDesarrollo');
@@ -805,9 +826,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const val = this.value;
                     if (val) {
                         // columna 2: Desarrollo
-                        dataTableContratos.column(2).search('^' + val + '$', true, false).draw();
+                        dataTableContratos.column(4).search('^' + val + '$', true, false).draw();
                     } else {
-                        dataTableContratos.column(2).search('').draw();
+                        dataTableContratos.column(4).search('').draw();
                     }
                 });
             }
@@ -1634,13 +1655,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     confirmButtonText: 'Sí, enviar',
                     cancelButtonText: 'Revisar información'
                 }).then((result) => {
-                    if (result.isConfirmed) {
+                    if (result.isConfirmed) {                        
                         formCrear.submit();
+                        let title = 'Guardado';
+                        let text = 'Contrato actualizado correctamente.';
+                        let icon = 'success';
+                        if (resp.includes('error')) {
+                            title = 'Error';
+                            text = 'No se pudo actualizar.';
+                            icon = 'error';
+                        }
+                        Swal.fire(title, text, icon).then(() => {
+                            window.location.reload();
+                        });
                     }
                 });
             });
         }
     })();
+
+   
+
+
+    
+
 
     /*
      * CALCULAR EDAD DEL CLIENTE
@@ -1695,7 +1733,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Se utiliza Summernote para proporcionar un editor de texto enriquecido en
      * los campos habitacional. El contenido HTML se actualiza en un campo
      * oculto antes de enviar el formulario.
-     */
+     
     (function inicializarHabitacionalEditor() {
         // Crear
         const editorCrear  = document.getElementById('crearHabitacionalEditor');
@@ -1732,7 +1770,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         }
-    })();
+    })();*/
 
     /*
      * ACTUALIZAR FECHA DE CONTRATO FIJA
@@ -1756,7 +1794,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mesNombre = mesesMayus[parseInt(mes, 10) - 1] || '';
                 // Dia en número seguido de la palabra DÍAS en plural
                 const diaNum = parseInt(dia, 10);
-                const fixed = `${diaNum} DÍAS DE MES DE ${mesNombre} DEL AÑO ${anio}`;
+                const fixed = `${diaNum} DÍAS DEL MES DE ${mesNombre} DEL AÑO ${anio}`;
                 crearFechaFixed.value = fixed;
                 // Actualizar día de inicio oculto
                 const crearDiaInicio = document.getElementById('crearDiaInicio');
@@ -1778,7 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const [anio, mes, dia] = val.split('-');
                 const mesNombre = mesesMayus[parseInt(mes, 10) - 1] || '';
                 const diaNum = parseInt(dia, 10);
-                const fixed = `${diaNum} DÍAS DE MES DE ${mesNombre} DEL AÑO ${anio}`;
+                const fixed = `${diaNum} DÍAS DEL MES DE ${mesNombre} DEL AÑO ${anio}`;
                 editarFechaFixed.value = fixed;
                 const editarDiaInicio = document.getElementById('editarDiaInicio');
                 if (editarDiaInicio) {
@@ -1787,4 +1825,130 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     })();
+
+    // Inicializar intl-tel-input
+        const inputTel = document.querySelector("#telefono_cliente");
+        const iti = window.intlTelInput(inputTel, {
+            initialCountry: "mx",            // País inicial (México)
+            separateDialCode: true,          // Mostrar el código (+52) separado
+            preferredCountries: ["mx","us","es","co","ar"], // Lista de favoritos
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+        });
+
+        // Capturar el form
+        const form = document.getElementById("formCrearContratoCompleto");
+        if (form) {
+            form.addEventListener("submit", function(e) {
+            // Si el número no es válido, mostramos error
+            if (!iti.isValidNumber()) {
+                e.preventDefault();
+                inputTel.classList.add("is-invalid");
+                return;
+            }
+
+            // Guardar el número internacional en el input oculto
+            document.getElementById("cliente_telefono").value = iti.getNumber(); 
+            // Ejemplo: +523323282919
+            });
+        }
+        inputTel.addEventListener("input", function() {
+        this.value = this.value.replace(/\D/g, ""); // Solo números
+        });
+        // Forzar que todos los inputs con class="number" solo acepten dígitos
+        document.querySelectorAll('.number').forEach(input => {
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, ''); // quita todo lo que no sea número
+        });
+    });
+
+// tooltip y sincronización de mensualidades y rango de pago
+
+        (function () {
+        const inputMeses = document.querySelector('input[name="mensualidades"]');
+        const inputAnios = document.getElementById('crearRangoPago');
+
+        if (inputMeses && inputAnios) {
+            // Inicializar tooltip de Bootstrap
+            const tooltip = new bootstrap.Tooltip(inputAnios, {
+            trigger: 'manual' // se controla con JS
+            });
+
+            // 🔹 De mensualidades → texto normalizado
+            inputMeses.addEventListener('input', function () {
+            const meses = parseInt(this.value, 10);
+            if (!isNaN(meses) && meses > 0) {
+                const anios = Math.floor(meses / 12);
+                const mesesRestantes = meses % 12;
+                inputAnios.value = formatearTiempo(anios, mesesRestantes);
+                tooltip.hide();
+            } else {
+                inputAnios.value = '';
+                tooltip.hide();
+            }
+            });
+
+            // 🔹 Mientras escribe en rango_pago → mostrar tooltip
+            inputAnios.addEventListener('input', function () {
+            const interpretacion = interpretarTexto(this.value);
+            if (interpretacion.totalMeses > 0) {
+                inputAnios.setAttribute("data-bs-original-title", "= " + formatearTiempo(interpretacion.anios, interpretacion.meses));
+                tooltip.show();
+            } else {
+                tooltip.hide();
+            }
+            });
+
+            // 🔹 Al salir → normalizar valor y ocultar tooltip
+            inputAnios.addEventListener('blur', function () {
+            const interpretacion = interpretarTexto(this.value);
+            if (interpretacion.totalMeses > 0) {
+                inputMeses.value = interpretacion.totalMeses;
+                this.value = formatearTiempo(interpretacion.anios, interpretacion.meses);
+            }
+            tooltip.hide();
+            });
+
+            // Helpers
+            function interpretarTexto(texto) {
+            texto = texto.toLowerCase().trim();
+            let anios = 0, meses = 0;
+
+            if (/^\d+[\.,]\d+$/.test(texto)) {
+                const partes = texto.split(/[\.,]/);
+                anios = parseInt(partes[0], 10);
+                meses = parseInt(partes[1], 10);
+            } else {
+                const matchAnios = texto.match(/(\d+)\s*(a|años|año)/);
+                const matchMeses = texto.match(/(\d+)\s*(m|meses|mes)/);
+
+                if (matchAnios) anios = parseInt(matchAnios[1], 10);
+                if (matchMeses) meses = parseInt(matchMeses[1], 10);
+
+                if (!matchAnios && !matchMeses) {
+                const numeros = texto.match(/\d+/g) || [];
+                if (numeros.length === 1) {
+                    meses = parseInt(numeros[0], 10);
+                } else if (numeros.length >= 2) {
+                    anios = parseInt(numeros[0], 10);
+                    meses = parseInt(numeros[1], 10);
+                }
+                }
+            }
+
+            const totalMeses = (anios * 12) + meses;
+            return { anios: Math.floor(totalMeses / 12), meses: totalMeses % 12, totalMeses };
+            }
+
+            function formatearTiempo(anios, meses) {
+            let texto = '';
+            if (anios > 0) texto += anios + (anios === 1 ? ' AÑO ' : ' AÑOS ');
+            if (meses > 0) texto += meses + (meses === 1 ? ' MES' : ' MESES');
+            if (!texto) texto = '';
+            return texto.trim();
+            }
+        }
+        })();
+
+
+
 });
