@@ -142,7 +142,8 @@ class ControladorContratos
      * El formulario envía un campo oculto "crearContratoCompleto" para
      * asegurar que sólo se ejecute en la página correcta.
      */
-    
+
+    //ESTE ES EL METODO PARA crearContrato.php
     static public function ctrCrearContratoCompleto()
     {
         if (!isset($_POST['crearContratoCompleto'])) {
@@ -209,7 +210,6 @@ class ControladorContratos
             // Edad calculada del cliente
             'edad'         => isset($_POST['cliente_edad']) ? intval($_POST['cliente_edad']) : '',
             'referencias'  => $clienteReferencias
-
         ];
         // Insertar cliente y obtener ID
         $clienteId = ModeloClientes::mdlAgregarClienteRetId($datosCliente);
@@ -744,7 +744,7 @@ class ControladorContratos
         'CLIENTE_EMAIL'              => $cliente['email'] ?? '',
         'CLIENTE_BENEFICIARIO'       => $cliente['beneficiario'] ?? '',
         'CLIENTE_EDAD'               => $cliente['edad'] ?? '',
-        'CLIENTE_REFERENCIA'         => $cliente['referencias'] ?? '',
+        'CLIENTE_REFERENCIA'         => $cliente['referencia'] ?? '',
             
 
         // Desarrollo

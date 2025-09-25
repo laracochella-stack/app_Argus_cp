@@ -1722,6 +1722,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     })();
+  
 
 
 
@@ -1878,50 +1879,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
-    // === Teléfono con intl-tel-input (opcional) ===
-        (function initTelefonoCliente() {
+    // === Teléfono con intl-tel-input ===
+    (function initTelefonoCliente() {
         const form = document.getElementById("formCrearContratoCompleto");
         const inputTel = document.querySelector("#telefono_cliente");
+        const hiddenTel = document.getElementById("cliente_telefono");
         let iti = null;
 
-        // Sólo inicializa si el input existe y la librería está cargada
+        // Inicializa sólo si existe el input y la librería está cargada
         if (inputTel && window.intlTelInput) {
             iti = window.intlTelInput(inputTel, {
-            initialCountry: "mx",
-            separateDialCode: true,
-            preferredCountries: ["mx", "us", "es", "co", "ar"],
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                initialCountry: "mx",
+                separateDialCode: true,
+                preferredCountries: ["mx", "us", "es", "co", "ar"],
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
             });
 
-            // Si existe el hidden donde guardas el número final, sincronízalo al vuelo
-            const hiddenTel = document.getElementById("cliente_telefono");
-            if (hiddenTel) {
+            // Sincronizar en cada cambio
             const syncHidden = () => {
-                if (iti && iti.getNumber) hiddenTel.value = iti.getNumber(); // E.164
+                if (iti && iti.getNumber && hiddenTel) {
+                    hiddenTel.value = iti.getNumber(); // formato E.164
+                }
             };
             inputTel.addEventListener("countrychange", syncHidden);
             inputTel.addEventListener("blur", syncHidden);
             inputTel.addEventListener("input", syncHidden);
-            }
         }
 
-        // Validación al enviar: sólo si existe el campo y fue inicializado
+        // Validación final al enviar
         if (form) {
             form.addEventListener("submit", function (e) {
-            if (inputTel && iti) {
-                if (!iti.isValidNumber()) {
-                e.preventDefault();
-                inputTel.classList.add("is-invalid");
-                return;
-                } else {
-                inputTel.classList.remove("is-invalid");
-                inputTel.classList.add("is-valid");
+                if (inputTel && iti) {
+                    // sincroniza SIEMPRE antes de validar
+                    if (hiddenTel) hiddenTel.value = iti.getNumber();
+
+                    if (!iti.isValidNumber()) {
+                        e.preventDefault();
+                        inputTel.classList.add("is-invalid");
+                        inputTel.classList.remove("is-valid");
+                        Swal.fire("Error", "Número de teléfono inválido.", "error"); // opcional
+                        return;
+                    } else {
+                        inputTel.classList.remove("is-invalid");
+                        inputTel.classList.add("is-valid");
+                    }
                 }
-            }
-            // Si no hay teléfono en esta vista, no hacemos nada aquí
             });
         }
-        })();
+    })();
 
 
 // tooltip y sincronización de mensualidades y rango de pago

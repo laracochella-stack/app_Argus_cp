@@ -9,7 +9,7 @@ class ModeloClientes {
      */
     public static function mdlAgregarCliente($datos) {
         $link = Conexion::conectar();
-        $sql = "INSERT INTO argus_clientes (nombre, nacionalidad, fecha_nacimiento, rfc, curp, ine, estado_civil, ocupacion, telefono, domicilio, email, beneficiario, referencia) VALUES (:nombre, :nacionalidad, :fecha, :rfc, :curp, :ine, :estado_civil, :ocupacion, :telefono, :domicilio, :email, :beneficiario, :referencia)";
+        $sql = "INSERT INTO argus_clientes (nombre, nacionalidad, fecha_nacimiento, rfc, curp, ine, estado_civil, ocupacion, telefono, domicilio, email, beneficiario, referencias) VALUES (:nombre, :nacionalidad, :fecha, :rfc, :curp, :ine, :estado_civil, :ocupacion, :telefono, :domicilio, :email, :beneficiario, :referencias)";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
         $stmt->bindParam(':nacionalidad', $datos['nacionalidad'], PDO::PARAM_STR);
@@ -23,7 +23,7 @@ class ModeloClientes {
         $stmt->bindParam(':domicilio', $datos['domicilio'], PDO::PARAM_STR);
         $stmt->bindParam(':email', $datos['email'], PDO::PARAM_STR);
         $stmt->bindParam(':beneficiario', $datos['beneficiario'], PDO::PARAM_STR);
-        $stmt->bindParan(':referencia', $datos['referencia'], PDO::PARAM_STR);
+        $stmt->bindParam(':referencias', $datos['referencias'], PDO::PARAM_STR);
         if ($stmt->execute()) {
             return 'ok';
         }
@@ -41,7 +41,7 @@ class ModeloClientes {
      */
     public static function mdlAgregarClienteRetId($datos) {
         $link = Conexion::conectar();
-        $sql = "INSERT INTO argus_clientes (nombre, nacionalidad, fecha_nacimiento, rfc, curp, ine, estado_civil, ocupacion, telefono, domicilio, email, beneficiario) VALUES (:nombre, :nacionalidad, :fecha, :rfc, :curp, :ine, :estado_civil, :ocupacion, :telefono, :domicilio, :email, :beneficiario)";
+        $sql = "INSERT INTO argus_clientes (nombre, nacionalidad, fecha_nacimiento, rfc, curp, ine, estado_civil, ocupacion, telefono, domicilio, email, beneficiario, referencias) VALUES (:nombre, :nacionalidad, :fecha, :rfc, :curp, :ine, :estado_civil, :ocupacion, :telefono, :domicilio, :email, :beneficiario, :referencias)";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
         $stmt->bindParam(':nacionalidad', $datos['nacionalidad'], PDO::PARAM_STR);
@@ -55,7 +55,7 @@ class ModeloClientes {
         $stmt->bindParam(':domicilio', $datos['domicilio'], PDO::PARAM_STR);
         $stmt->bindParam(':email', $datos['email'], PDO::PARAM_STR);
         $stmt->bindParam(':beneficiario', $datos['beneficiario'], PDO::PARAM_STR);
-        $stmt->bindParan(':referencia', $datos['referencia'], PDO::PARAM_STR);
+        $stmt->bindParam(':referencias', $datos['referencias'], PDO::PARAM_STR);
         if ($stmt->execute()) {
             return (int)$link->lastInsertId();
         }
@@ -80,7 +80,7 @@ class ModeloClientes {
      */
     public static function mdlEditarCliente($datos) {
         $link = Conexion::conectar();
-        $sql = "UPDATE argus_clientes SET nombre = :nombre, nacionalidad = :nacionalidad, fecha_nacimiento = :fecha, rfc = :rfc, curp = :curp, ine = :ine, estado_civil = :estado_civil, ocupacion = :ocupacion, telefono = :telefono, domicilio = :domicilio, email = :email, beneficiario = :beneficiario WHERE id = :id";
+        $sql = "UPDATE argus_clientes SET nombre = :nombre, nacionalidad = :nacionalidad, fecha_nacimiento = :fecha, rfc = :rfc, curp = :curp, ine = :ine, estado_civil = :estado_civil, ocupacion = :ocupacion, telefono = :telefono, domicilio = :domicilio, email = :email, beneficiario = :beneficiario, referencias = :referencias WHERE id = :id";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(':id', $datos['id'], PDO::PARAM_INT);
         $stmt->bindParam(':nombre', $datos['nombre'], PDO::PARAM_STR);
@@ -95,7 +95,7 @@ class ModeloClientes {
         $stmt->bindParam(':domicilio', $datos['domicilio'], PDO::PARAM_STR);
         $stmt->bindParam(':email', $datos['email'], PDO::PARAM_STR);
         $stmt->bindParam(':beneficiario', $datos['beneficiario'], PDO::PARAM_STR);
-        $stmt->bindParan(':referencia', $datos['referencia'], PDO::PARAM_STR);
+        $stmt->bindParam(':referencias', $datos['referencias'], PDO::PARAM_STR);
         if ($stmt->execute()) {
             return 'ok';
         }

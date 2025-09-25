@@ -6,6 +6,7 @@
  * la captura de información y utiliza la lógica existente para cargar
  * nacionalidades, tipos de contrato y desarrollos.
  */
+
 // Procesar creación si se envía el formulario
 ControladorContratos::ctrCrearContratoCompleto();
 
@@ -44,7 +45,7 @@ if ($clienteId > 0) {
       <div class="card-body">
         <!-- Usar la misma ruta crearContrato para enviar el formulario. El controlador identificará
              la operación a través del campo oculto crearContratoCompleto -->
-        <form id="formCrearContratoCompleto" method="post" action="index.php?ruta=contratos">
+        <form id="formCrearContratoCompleto" method="post" action="index.php?ruta=crearContrato">
           <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
           <input type="hidden" name="crearContratoCompleto" value="1">
 
