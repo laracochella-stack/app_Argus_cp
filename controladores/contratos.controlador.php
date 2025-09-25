@@ -292,7 +292,7 @@ class ControladorContratos
             $entero = floor($numero); // tomamos solo la parte entera
             $letras = strtoupper($formatter->format($entero));
 
-            return $numero . " (" . $letras . "M2 METROS CUADRADOS)";
+            return $numero . "M²". " (" . $letras . "METROS CUADRADOS)";
         };
 
 
