@@ -31,10 +31,15 @@ if (class_exists('ControladorParametros')) {
         $listaTiposContrato[$var['identificador']] = $var['nombre'];
     }
 }
+
+$hmacSecret = getenv('HMAC_SECRET');
+
+
 ?>
 <section class="content-header">
   <div class="container-fluid">
     <h1>Clientes</h1>
+    
   </div>
 </section>
 
@@ -185,121 +190,151 @@ if (class_exists('ControladorParametros')) {
   </div>
 </div>
 
-<!-- Modal crear contrato -->
-<div class="modal fade" id="modalCrearContrato" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+
+<!-- Modal Crear Contrato desde clientes.php -->
+<div class="modal fade" id="modalCrearContrato" tabindex="-1" aria-labelledby="modalCrearContratoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
     <div class="modal-content">
-      <form id="formCrearContrato" method="post" action="index.php?ruta=clientes&accion=crearContrato">
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-        <input type="hidden" name="cliente_id" id="crearContratoClienteId">
-        <input type="hidden" name="crearContrato" value="1">
-        <div class="modal-header">
-          <h5 class="modal-title">Crear contrato</h5>
+      <form id="formCrearContratoCompleto" method="post" action="index.php?ruta=contratos">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalCrearContratoLabel">Crear nuevo contrato</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
+
         <div class="modal-body">
-          <div class="row g-3">
+          <?php
+          if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+          }
+          ?>
+          <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+          <input type="hidden" name="crearContratoCompleto" value="1">
+          <!-- Campo obligatorio: ID del cliente -->
+          <input type="hidden" name="cliente_id" id="cliente_id_modal">
+
+          <!-- ================= DATOS DEL DESARROLLO ================= -->
+          <h5 class="mb-3">Datos del desarrollo</h5>
+          <div class="row g-3 mb-4 p-3 bg-light rounded">
             <div class="col-md-6">
               <label class="form-label">Desarrollo</label>
-              <select class="form-select" name="desarrollo_id" id="selectDesarrolloContrato" required>
+              <select class="form-select" name="desarrollo_id" id="selectDesarrolloCrear" required>
                 <option value="">Seleccione un desarrollo</option>
-                <?php foreach ($desarrollosDisponibles as $des) : ?>
-                <option value="<?php echo $des['id']; ?>"
-                        data-superficie="<?php echo htmlspecialchars($des['superficie'], ENT_QUOTES); ?>"
-                        data-tipo-id="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
-                        data-tipo-nombre="<?php echo htmlspecialchars($listaTiposContrato[$des['tipo_contrato']] ?? $des['tipo_contrato'], ENT_QUOTES); ?>"
-                        data-lotes="<?php echo htmlspecialchars($des['lotes_disponibles'] ?? '', ENT_QUOTES); ?>">
-                  <?php echo htmlspecialchars($des['nombre']); ?>
-                </option>
+                <?php foreach ($desarrollos as $des) : ?>
+                  <option value="<?php echo $des['id']; ?>"
+                          data-superficie="<?php echo htmlspecialchars($des['superficie'], ENT_QUOTES); ?>"
+                          data-tipo-id="<?php echo htmlspecialchars($des['tipo_contrato'], ENT_QUOTES); ?>"
+                          data-tipo-nombre="<?php echo htmlspecialchars($tiposContrato[$des['tipo_contrato']] ?? $des['tipo_contrato'], ENT_QUOTES); ?>"
+                          data-lotes="<?php echo htmlspecialchars($des['lotes_disponibles'] ?? '', ENT_QUOTES); ?>">
+                    <?php echo htmlspecialchars($des['nombre']); ?>
+                  </option>
                 <?php endforeach; ?>
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Mensualidades</label>
-              <input type="number" name="mensualidades" class="form-control" min="1" required>
+              <label class="form-label">Superficie</label>
+              <input type="text" class="form-control number" id="crearSuperficie" name="contrato_superficie" placeholder="TAMAÑO DE LA FRACCIÓN" required>
+              <input type="hidden" name="superficie_fixed" id="crearSuperficieFixed">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Superficie</label>
-              <input type="text" name="superficie" id="contratoSuperficie" class="form-control" readonly required>
+              <label class="form-label">Plantilla del contrato</label>
+              <input type="hidden" name="tipo_contrato" id="crearTipoId">
+              <input type="text" class="form-control" id="crearTipoNombre" readonly>
+            </div>
+          </div>
+
+          <!-- ================= DATOS DEL CONTRATO ================= -->
+          <h5 class="mb-3">Datos del contrato</h5>
+          <div class="row g-3 p-3 bg-light rounded">
+            <div class="col-md-3">
+              <label class="form-label">Folio</label>
+              <input type="text" class="form-control text-uppercase" name="folio" required oninput="this.value=this.value.toUpperCase();">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Fecha del contrato</label>
+              <input type="date" class="form-control" name="fecha_contrato" id="crearFechaContrato">
+              <input type="hidden" name="fecha_contrato_fixed" id="crearFechaContratoFixed">
+              <input type="hidden" name="dia_inicio" id="crearDiaInicio">
             </div>
             <div class="col-md-6">
               <label class="form-label">Fracción vendida/cedida</label>
-              <!-- Campo de texto para ingresar múltiples fracciones como etiquetas. El usuario escribe una fracción y presiona Enter para agregarla -->
-              <input type="text" class="form-control" id="inputFraccionContrato" placeholder="Ingresa una fracción y presiona Enter">
-              <!-- Contenedor donde se mostrarán las etiquetas de fracciones ingresadas -->
-              <div id="contenedorFraccionesContrato" class="mt-2"></div>
-              <!-- Lista de fracciones disponibles para el desarrollo seleccionado -->
+              <input type="text" class="form-control" id="inputFraccionCrear" placeholder="Ingresa una fracción y presiona Enter">
+              <div id="contenedorFraccionesCrear" class="mt-2"></div>
               <label class="form-label mt-2">Lotes disponibles:</label>
-              <div id="listaFraccionesDisponiblesContrato" class="mt-1" style="font-size:0.8rem;"></div>
-              <!-- Input oculto que contendrá la lista de fracciones separadas por coma -->
-              <!-- Guardaremos el listado de fracciones como una cadena separada por comas -->
-              <input type="hidden" name="fracciones" id="hiddenFraccionesContrato">
+              <div id="listaFraccionesDisponiblesCrear" class="mt-1" style="font-size:0.8rem;"></div>
+              <input type="hidden" name="fracciones" id="hiddenFraccionesCrear">
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Entrega de la posesión del inmueble</label>
-              <input type="date" name="entrega_posecion" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Fecha de firma del contrato</label>
-              <input type="date" name="fecha_firma" class="form-control" required>
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-12">
               <label class="form-label">Habitacional y colindancias</label>
-              <input type="text" name="habitacional" class="form-control" required>
+              <textarea class="form-control text-uppercase" name="habitacional" id="crearHabitacional" rows="4" oninput="this.value=this.value.toUpperCase();"></textarea>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Inicio de pagos</label>
-              <input type="date" name="inicio_pagos" class="form-control" required>
+              <label class="form-label">Fecha de la posesión</label>
+              <input type="date" class="form-control" name="entrega_posecion" required>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Tipo de contrato</label>
-              <!-- Campo oculto para enviar el identificador del tipo de contrato -->
-              <input type="hidden" name="tipo_contrato" id="contratoTipoId">
-              <!-- Campo de solo lectura para mostrar el nombre del tipo de contrato -->
-              <input type="text" id="contratoTipoNombre" class="form-control" readonly required>
+              <label class="form-label">Plazo del financiamiento</label>
+              <div class="d-flex align-items-center">
+                <input type="date" class="form-control" name="rango_pago_inicio" id="rangoPagoInicio" required>
+                <span class="mx-2">a</span>
+                <input type="date" class="form-control" name="rango_pago_fin" id="rangoPagoFin" required>
+              </div>
             </div>
-
-            <!-- Nuevos campos para creación de contrato -->
-            <div class="col-md-6">
-              <label class="form-label">Monto del precio del inmueble</label>
-              <input type="number" step="0.01" name="monto_inmueble" id="montoInmueble" class="form-control" required>
-              <input type="hidden" name="monto_inmueble_fixed" id="montoInmuebleFixed">
+            <div class="col-md-3">
+              <label class="form-label">Meses del financiamiento</label>
+              <input type="number" class="form-control" name="mensualidades" min="1" placeholder="ej. 6" required>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Enganche o pago inicial</label>
-              <input type="number" step="0.01" name="enganche" id="enganche" class="form-control" required>
-              <input type="hidden" name="enganche_fixed" id="engancheFixed">
+            <div class="col-md-3">
+              <label class="form-label">Años del financiamiento</label>
+              <input type="text" class="form-control" name="rango_pago" id="crearRangoPago" placeholder="ej. 1 AÑO, 18 MESES" required>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Saldo de pago</label>
-              <input type="number" step="0.01" name="saldo_pago" id="saldoPago" class="form-control" readonly required>
-              <input type="hidden" name="saldo_pago_fixed" id="saldoPagoFixed">
-            </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label class="form-label">Parcialidades anuales</label>
-              <input type="text" name="parcialidades_anuales" id="parcialidadesAnuales" class="form-control">
+              <input type="text" class="form-control" name="parcialidades_anuales" id="crearParcialidadesAnuales" placeholder="SIN PARCIALIDADES">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
+              <label class="form-label">Monto del precio del inmueble</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" class="form-control" name="monto_inmueble" id="crearMontoInmueble" required>
+                <input type="hidden" name="monto_inmueble_fixed" id="crearMontoInmuebleFixed">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Enganche o pago inicial</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" class="form-control" name="enganche" id="crearEnganche" required>
+                <input type="hidden" name="enganche_fixed" id="crearEngancheFixed">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Saldo de pago</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" class="form-control" name="saldo_pago" id="crearSaldoPago" readonly required>
+                <input type="hidden" name="saldo_pago_fixed" id="crearSaldoPagoFixed">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Pago mensual</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" class="form-control" name="pago_mensual" id="crearPagoMensual" required>
+                <input type="hidden" name="pago_mensual_fixed" id="crearPagoMensualFixed">
+              </div>
+            </div>
+            <div class="col-md-3">
               <label class="form-label">Penalización 10%</label>
-              <input type="number" step="0.01" name="penalizacion" id="penalizacion" class="form-control" readonly required>
-              <input type="hidden" name="penalizacion_fixed" id="penalizacionFixed">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Día de pago</label>
-              <input type="text" name="dia_pago" id="diaPago" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Rango de compromiso de pago</label>
-              <input type="text" name="rango_compromiso_pago" id="rangoCompromisoPago" class="form-control">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Vigencia del pagaré</label>
-              <input type="date" name="vigencia_pagare" id="vigenciaPagare" class="form-control">
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" class="form-control" name="penalizacion" id="crearPenalizacion" readonly required>
+                <input type="hidden" name="penalizacion_fixed" id="crearPenalizacionFixed">
+              </div>
             </div>
           </div>
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="submit" class="btn btn-success">Guardar contrato</button>
         </div>
       </form>
@@ -307,61 +342,8 @@ if (class_exists('ControladorParametros')) {
   </div>
 </div>
 
-<!-- Modal ver contrato -->
-<div class="modal fade" id="modalVerContrato" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Detalle del contrato</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Desarrollo</label>
-            <input type="text" class="form-control" id="verContratoDesarrollo" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Mensualidades</label>
-            <input type="text" class="form-control" id="verContratoMensualidades" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Superficie</label>
-            <input type="text" class="form-control" id="verContratoSuperficie" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Fracción vendida/cedida</label>
-            <input type="text" class="form-control" id="verContratoFraccion" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Entrega de posesión</label>
-            <input type="text" class="form-control" id="verContratoEntrega" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Fecha de firma</label>
-            <input type="text" class="form-control" id="verContratoFirma" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Habitacional y colindancias</label>
-            <input type="text" class="form-control" id="verContratoHabitacional" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Inicio de pagos</label>
-            <input type="text" class="form-control" id="verContratoInicio" readonly>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Tipo de contrato</label>
-            <input type="text" class="form-control" id="verContratoTipo" readonly>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-      </div>
-    </div>
-  </div>
-</div>
 
+<!-- Tabla de clientes -->
 <section class="content">
   <div class="container-fluid">
     <div class="card">
@@ -436,36 +418,16 @@ if (class_exists('ControladorParametros')) {
                   $contratosCliente = ControladorContratos::ctrMostrarContratos($cli['id']);
                   $numContratos = count($contratosCliente);
                 ?>
-                <!-- Botón crear contrato (siempre disponible) -->
-                <button type="button" class="btn btn-success btn-sm btnCrearContrato" data-bs-toggle="modal" data-bs-target="#modalCrearContrato"
-                  data-cliente-id="<?php echo $cli['id']; ?>">
+                
+                <a href="index.php?ruta=crearContrato&cliente_id=<?php echo $cli['id']; ?>" 
+                  class="btn btn-success btn-sm">
                   Crear contrato
-                </button>
-                <?php if ($numContratos === 1) : ?>
-                <?php
-                  $contratoDatos = $contratosCliente[0];
-                ?>
-                <!-- Botón ver contrato (si sólo existe uno) -->
-                <button type="button" class="btn btn-info btn-sm btnVerContrato" data-bs-toggle="modal" data-bs-target="#modalVerContrato"
-                  data-cliente-id="<?php echo $cli['id']; ?>"
-                  data-nombre-desarrollo="<?php echo htmlspecialchars($contratoDatos['nombre_desarrollo'], ENT_QUOTES); ?>"
-                  data-mensualidades="<?php echo htmlspecialchars($contratoDatos['mensualidades'], ENT_QUOTES); ?>"
-                  data-superficie="<?php echo htmlspecialchars($contratoDatos['superficie'], ENT_QUOTES); ?>"
-                  data-fraccion="<?php echo htmlspecialchars($contratoDatos['fraccion_vendida'], ENT_QUOTES); ?>"
-                  data-entrega="<?php echo htmlspecialchars($contratoDatos['entrega_posecion'], ENT_QUOTES); ?>"
-                  data-firma="<?php echo htmlspecialchars($contratoDatos['fecha_firma_contrato'], ENT_QUOTES); ?>"
-                  data-habitacional="<?php echo htmlspecialchars($contratoDatos['habitacional_colindancias'], ENT_QUOTES); ?>"
-                  data-inicio="<?php echo htmlspecialchars($contratoDatos['inicio_pagos'], ENT_QUOTES); ?>"
-                  data-tipo-id="<?php echo htmlspecialchars($contratoDatos['tipo_contrato'], ENT_QUOTES); ?>"
-                  data-tipo-nombre="<?php echo htmlspecialchars($listaTiposContrato[$contratoDatos['tipo_contrato']] ?? $contratoDatos['tipo_contrato'], ENT_QUOTES); ?>">
-                  Ver contrato
-                </button>
-                <?php elseif ($numContratos > 1) : ?>
+                </a>                              
                 <!-- Botón ver contratos (redirige a listado) -->
                 <a href="index.php?ruta=contratos&cliente_id=<?php echo $cli['id']; ?>" class="btn btn-info btn-sm">
                   Ver contratos
                 </a>
-                <?php endif; ?>
+                
               </td>
             </tr>
             <?php endforeach; ?>

@@ -64,8 +64,10 @@
 
 /* Asegurar que los modales scrollables muestren scroll correctamente y que los botones se mantengan visibles */
 .modal-dialog-scrollable .modal-body {
+    max-height: calc(100vh - 150px); /* ajusta según el tamaño del header/footer */
     overflow-y: auto;
 }
+
 .modal-dialog-scrollable .modal-content {
     max-height: 90vh;
 }

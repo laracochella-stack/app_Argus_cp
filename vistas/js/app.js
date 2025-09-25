@@ -1878,40 +1878,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
-    // Inicializar intl-tel-input
-        const inputTel = document.querySelector("#telefono_cliente");
-        const iti = window.intlTelInput(inputTel, {
-            initialCountry: "mx",            // País inicial (México)
-            separateDialCode: true,          // Mostrar el código (+52) separado
-            preferredCountries: ["mx","us","es","co","ar"], // Lista de favoritos
-            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
-        });
-
-        // Capturar el form
+    // === Teléfono con intl-tel-input (opcional) ===
+        (function initTelefonoCliente() {
         const form = document.getElementById("formCrearContratoCompleto");
+        const inputTel = document.querySelector("#telefono_cliente");
+        let iti = null;
+
+        // Sólo inicializa si el input existe y la librería está cargada
+        if (inputTel && window.intlTelInput) {
+            iti = window.intlTelInput(inputTel, {
+            initialCountry: "mx",
+            separateDialCode: true,
+            preferredCountries: ["mx", "us", "es", "co", "ar"],
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+            });
+
+            // Si existe el hidden donde guardas el número final, sincronízalo al vuelo
+            const hiddenTel = document.getElementById("cliente_telefono");
+            if (hiddenTel) {
+            const syncHidden = () => {
+                if (iti && iti.getNumber) hiddenTel.value = iti.getNumber(); // E.164
+            };
+            inputTel.addEventListener("countrychange", syncHidden);
+            inputTel.addEventListener("blur", syncHidden);
+            inputTel.addEventListener("input", syncHidden);
+            }
+        }
+
+        // Validación al enviar: sólo si existe el campo y fue inicializado
         if (form) {
-            form.addEventListener("submit", function(e) {
-            // Si el número no es válido, mostramos error
-            if (!iti.isValidNumber()) {
+            form.addEventListener("submit", function (e) {
+            if (inputTel && iti) {
+                if (!iti.isValidNumber()) {
                 e.preventDefault();
                 inputTel.classList.add("is-invalid");
                 return;
+                } else {
+                inputTel.classList.remove("is-invalid");
+                inputTel.classList.add("is-valid");
+                }
             }
-
-            // Guardar el número internacional en el input oculto
-            document.getElementById("cliente_telefono").value = iti.getNumber(); 
-            // Ejemplo: +523323282919
+            // Si no hay teléfono en esta vista, no hacemos nada aquí
             });
         }
-        inputTel.addEventListener("input", function() {
-        this.value = this.value.replace(/\D/g, ""); // Solo números
-        });
-        // Forzar que todos los inputs con class="number" solo acepten dígitos
-        document.querySelectorAll('.number').forEach(input => {
-        input.addEventListener('input', function () {
-            this.value = this.value.replace(/\D/g, ''); // quita todo lo que no sea número
-        });
-    });
+        })();
+
 
 // tooltip y sincronización de mensualidades y rango de pago
 
