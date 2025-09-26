@@ -3,14 +3,26 @@
  * Controlador para la gestión de parámetros y plantillas.
  * Incluye CRUD para variables (nacionalidades, tipos de contrato) y subida de plantillas.
  */
+
+
+
 class ControladorParametros
 {
+    static public function ctrGenerarIdentificador() {
+        // Prefijo con fecha actual + número aleatorio de 6 dígitos
+        $identificadorID = 'ID-' . date('Ymd') . '-' . mt_rand(100000, 999999);
+
+        return $identificadorID;
+    }
+    
     /**
      * Procesa el envío del formulario para agregar una variable. Debe venir con
      * los campos 'tipo', 'identificador' y 'nombre'.
      */
     static public function ctrAgregarVariable()
     {
+
+        
         if (!isset($_POST['agregarVariable'])) {
             return;
         }
@@ -25,8 +37,8 @@ class ControladorParametros
             return;
         }
         $tipo = trim($_POST['tipo']);
-        $identificador = trim($_POST['identificador']);
         $nombre = trim($_POST['nombre']);
+        $identificador = $identificadorID = self::ctrGenerarIdentificador();
         if ($tipo && $identificador && $nombre) {
             $datos = [
                 'tipo' => $tipo,

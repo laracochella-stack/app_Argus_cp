@@ -16,6 +16,8 @@ $nacionalidades = ControladorParametros::ctrMostrarVariables('nacionalidad');
 $tiposContrato = ControladorParametros::ctrMostrarVariables('tipo_contrato');
 $plantillas = ControladorParametros::ctrMostrarPlantillas();
 ?>
+
+
 <section class="content-header">
   <div class="container-fluid">
     <h1>Parámetros Generales</h1>
@@ -34,7 +36,7 @@ $plantillas = ControladorParametros::ctrMostrarPlantillas();
           <div class="row g-2 align-items-end">
             <div class="col-md-4">
               <label class="form-label">Identificador</label>
-              <input type="text" name="identificador" class="form-control" required>
+              <input type="text" name="identificador" id="" class="form-control-plaintext" readonly>
             </div>
             <div class="col-md-4">
               <label class="form-label">Nombre</label>
@@ -78,7 +80,7 @@ $plantillas = ControladorParametros::ctrMostrarPlantillas();
           <div class="row g-2 align-items-end">
             <div class="col-md-4">
               <label class="form-label">Identificador</label>
-              <input type="text" name="identificador" class="form-control" required>
+              <input type="text" name="identificador"  class="form-control-plaintext" readonly>
             </div>
             <div class="col-md-4">
               <label class="form-label">Nombre</label>
@@ -187,7 +189,7 @@ $plantillas = ControladorParametros::ctrMostrarPlantillas();
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label">Identificador</label>
-              <input type="text" name="identificador" id="editarVariableIdentificador" class="form-control" required>
+              <input type="text" name="identificador" id="editarVariableIdentificador" class="form-control-plaintext" readonly>
             </div>
             <div class="mb-3">
               <label class="form-label">Nombre</label>

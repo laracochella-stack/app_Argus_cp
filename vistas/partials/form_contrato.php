@@ -12,10 +12,13 @@
   <!-- Día de inicio (sólo número), calculado desde la fecha del contrato -->
   <input type="hidden" name="dia_inicio" id="crearDiaInicio">
 </div>
-
-<div class="col-md-6">
+<div class="col-md-3">
+  <label class="form-label">Inicio de pagos</label>
+  <input type="date" name="inicio_pagos" class="form-control" required>
+</div>
+<div class="col-md-3">
   <label class="form-label">Fracción vendida/cedida</label>
-  <input type="text" class="form-control" id="inputFraccionCrear" placeholder="Ingresa una fracción y presiona Enter">
+  <input type="text" class="form-control" id="inputFraccionCrear" placeholder="Ingresa y presiona Enter">
   <div id="contenedorFraccionesCrear" class="mt-2"></div>
   <label class="form-label mt-2">Lotes disponibles:</label>
   <div id="listaFraccionesDisponiblesCrear" class="mt-1" style="font-size:0.8rem;"></div>
@@ -42,7 +45,10 @@
     <input type="date" class="form-control" name="rango_pago_fin" id="rangoPagoFin" required>
   </div>
 </div>
-
+<div class="col-md-12">
+  <label class="form-label">Clausulas del financiamiento</label>
+  <input type="text" class="form-control" name="financiamiento_clusulas" min="1" placeholder="" required>
+</div>
 <!-- Campos financieros existentes -->
 <div class="col-md-3">
   <label class="form-label">Meses del financiamiento</label>
@@ -95,7 +101,7 @@
 </div>
 
 <div class="col-md-3">
-  <label class="form-label">Penalización 10%</label>
+  <label class="form-label">Penalización 20%</label>
   <div class="input-group">
     <span class="input-group-text">$</span>
     <input type="number" step="0.01" class="form-control" name="penalizacion" id="crearPenalizacion" readonly required>

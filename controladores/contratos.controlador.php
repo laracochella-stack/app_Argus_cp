@@ -256,7 +256,8 @@ class ControladorContratos
         // Rango de pago (inicio y fin) se reciben independientemente
         $rangoInicioRaw = isset($_POST['rango_pago_inicio']) ? trim($_POST['rango_pago_inicio']) : '';
         $rangoFinRaw    = isset($_POST['rango_pago_fin']) ? trim($_POST['rango_pago_fin']) : '';
-        // Montos y cálculos
+        // Montos y cálculos financiamiento_clusulas
+        $clusulasFianciamiento    = isset($_POST['financiamiento_clusulas']) ? trim($_POST['financiamiento_clusulas']) : '';
         $montoInmueble      = isset($_POST['monto_inmueble']) ? floatval($_POST['monto_inmueble']) : 0;
         $montoInmuebleFixed = isset($_POST['monto_inmueble_fixed']) ? trim($_POST['monto_inmueble_fixed']) : '';
         $enganche           = isset($_POST['enganche']) ? floatval($_POST['enganche']) : 0;
@@ -330,6 +331,7 @@ class ControladorContratos
             'saldo_pago'                  => number_format($saldoPago, 2, '.', ','),
             'saldo_pago_fixed'            => $saldoPagoFixed,
             'parcialidades_anuales'       => $parcialidadesAnuales,
+            'financiamiento_clusulas'   => $clusulasFianciamiento,
             'penalizacion_10'             => number_format($penalizacion10, 2, '.', ','),
             'penalizacion_10_fixed'       => $penalizacionFixed,
             'pago_mensual'                => number_format($pagoMensual, 2, '.', ','),
@@ -364,10 +366,16 @@ class ControladorContratos
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             
             header('Content-Type: application/json');
-            if ($resp === 'ok') {
-                echo json_encode(['status' => 'ok', 'message' => 'Contrato creado correctamente']);
+             if ($resp === 'ok') {
+                echo json_encode([
+                    'status' => 'ok', 
+                    'message' => 'Contrato creado correctamente'
+                ]);
             } else {
-                echo json_encode(['status' => 'error', 'message' => 'No se pudo crear el contrato']);
+                echo json_encode([
+                    'status' => 'error', 
+                    'message' => is_string($resp) ? $resp : 'No se pudo crear el contrato'
+                ]);
             }
             exit; // 🚨 evitar que siga renderizando vistas
         }
@@ -601,14 +609,15 @@ class ControladorContratos
         // Contrato
         'CONTRATO_FOLIO'                 => $contrato['folio'] ?? '',
         'CONTRATO_MENSUALIDADES'         => $contrato['mensualidades'] ?? '',
-        //'CONTRATO_SUPERFICIE'     => $contrato['superficie'] ?? '',
-        'CONTRATO_SUPERFICIE'            => $contrato['superficie_fixed'] ?? '',
+        'CONTRATO_SUPERFICIE_NUM'     => $contrato['superficie'] ?? '',
+        'CONTRATO_SUPERFICIE_LT'            => $contrato['superficie_fixed'] ?? '',
         'CONTRATO_FRACCION_VENDIDA'      => $contrato['fraccion_vendida'] ?? '',
         'CONTRATO_ENTREGA_POSESION'      => $contrato['entrega_posecion'] ?? '',
         'CONTRATO_FECHA_FIRMA'           => $contrato['fecha_firma_contrato'] ?? '',
         'CONTRATO_COLINDANCIAS'          => $contrato['habitacional_colindancias'] ?? '',
         'CONTRATO_INICIO_PAGOS'          => $contrato['inicio_pagos'] ?? '',
-        'CONTRATO_TIPO'                  => $contrato['tipo_contrato'] ?? '',
+        'CONRTATO_CLAUSULAS'          => $contrato['financiamiento_clusulas'] ?? '',
+        //'CONTRATO_TIPO'                  => $contrato['tipo_contrato'] ?? '',
         //'CONTRATO_MONTO'                 => $contrato['monto_precio_inmueble'] ?? '',
         'CONTRATO_PRECIO_INMUEBLE'       => $contrato['monto_precio_inmueble_fixed'] ?? '',
         //'CONTRATO_ENGANCHE'              => $contrato['enganche'] ?? '',
@@ -616,8 +625,8 @@ class ControladorContratos
         //'CONTRATO_SALDO'                 => $contrato['saldo_pago'] ?? '',
         'CONTRATO_SALDO'           => $contrato['saldo_pago_fixed'] ?? '',
         'CONTRATO_PARCIALIDADES_ANUALES' => $contrato['parcialidades_anuales'] ?? '',
-        'CONTRATO_PENALIZACION'          => $contrato['penalizacion_10'] ?? '',
-        'CONTRATO_PENALIZACION_FIXED'    => $contrato['penalizacion_10_fixed'] ?? '',
+        //'CONTRATO_PENALIZACION'          => $contrato['penalizacion_10'] ?? '',
+        'CONTRATO_PENALIZACION'    => $contrato['penalizacion_10_fixed'] ?? '',
         //'CONTRATO_PAGO_MENSUAL'          => $contrato['pago_mensual'] ?? '',
         'CONTRATO_PAGO_MENSUAL'    => $contrato['pago_mensual_fixed'] ?? '',
         'CONTRATO_FECHA_N'                 => $contrato['fecha_contrato'] ?? '',
@@ -626,7 +635,7 @@ class ControladorContratos
         'CONTRATO_FIN_PAGO'             => $contrato['rango_pago_fin'] ?? '',
         'CONTRATO_RANGO'                 => $contrato['rango_pago'] ?? '',
         'CONTRATO_DIA_INICIO'            => $contrato['dia_inicio'] ?? '',
-        'CONTRATO_VIGENCIA_PAGARE'       => $contrato['vigencia_pagare'] ?? ''
+        //'CONTRATO_VIGENCIA_PAGARE'       => $contrato['vigencia_pagare'] ?? ''
     ];
 
 

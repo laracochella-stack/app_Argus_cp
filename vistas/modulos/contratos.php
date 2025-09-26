@@ -117,10 +117,6 @@ foreach ($varsTipoContrato as $var) {
           </table>
 
           <!-- Contenedor de acciones por selección -->
-            
-
-
-
 
         </div>
       </div>
@@ -151,7 +147,7 @@ foreach ($varsTipoContrato as $var) {
                 <!-- Campo oculto para almacenar la superficie convertida a letras en edición -->
                 <input type="hidden" name="superficie_fixed" id="editarSuperficieFixed">
               </div>
-              <div class="col-md-6">
+              <div class="col-md-3">
                 <label class="form-label">Fracción vendida/cedida</label>
                 <!-- Campo de texto para ingresar fracciones como etiquetas al editar -->
                 <input type="text" class="form-control" id="inputFraccionEditar" placeholder="Ingresa una fracción y presiona Enter">
@@ -162,6 +158,10 @@ foreach ($varsTipoContrato as $var) {
                 <div id="listaFraccionesDisponiblesEditar" class="mt-1" style="font-size:0.8rem;"></div>
                 <!-- Campo oculto para enviar la lista separada por coma -->
                 <input type="hidden" name="fracciones" id="hiddenFraccionesEditar">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Inicio de pagos</label>
+                <input type="date" name="entrega_posecion" id="editarContratoEntrega" class="form-control" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Entrega de posesión</label>
@@ -176,9 +176,9 @@ foreach ($varsTipoContrato as $var) {
                 <!-- Campo de texto simple en mayúsculas para habitacional en edición -->
                 <textarea class="form-control text-uppercase" name="habitacional" id="editarHabitacional" rows="3" oninput="this.value = this.value.toUpperCase();"></textarea>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-3">
                 <label class="form-label">Inicio de pagos</label>
-                <input type="date" name="inicio_pagos" id="editarContratoInicio" class="form-control" required>
+                <input type="date" name="inicio_pagos" class="form-control" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Tipo de contrato</label>
@@ -210,7 +210,7 @@ foreach ($varsTipoContrato as $var) {
               <input type="text" name="parcialidades_anuales" id="editarParcialidadesAnuales" class="form-control">
             </div>
 
-            <!-- Nuevo campo: pago mensual en edición -->
+            <!-- Nuevo campo: pago mensual en edición inicio_pagos-->
             <div class="col-md-6">
               <label class="form-label">Pago mensual</label>
               <input type="number" step="0.01" name="pago_mensual" id="editarPagoMensual" class="form-control" required>

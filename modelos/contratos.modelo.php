@@ -35,13 +35,15 @@ class ModeloContratos
             $stmt->bindParam(":desarrollo_id", $datos['desarrollo_id'], PDO::PARAM_INT);
             $stmt->bindParam(":datta_contrato", $datos['datta_contrato'], PDO::PARAM_STR);
             if ($stmt->execute()) {
-                return 'ok';
+            return 'ok';
+                }
+                return 'error: fallo execute()';
+            } catch (PDOException $e) {
+                return 'error: ' . $e->getMessage();
             }
-            return 'error';
-        } catch (Exception $e) {
-            return 'error';
-        }
     }
+
+    
 
     /**
      * Obtiene un contrato existente para un cliente. Se une con la tabla de desarrollos

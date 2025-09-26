@@ -195,7 +195,7 @@ $hmacSecret = getenv('HMAC_SECRET');
   <div class="container-fluid">
     <div class="card">
       <div class="card-header"><h3 class="card-title">Listado</h3></div>
-      <div class="card-body table-responsive p-0">
+      <div class="card-body table-responsive">
         <table class="table table-hover" id="tablaClientes">
           <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Acciones</th></tr></thead>
           <tbody>

@@ -34,7 +34,7 @@ if (class_exists('ControladorParametros')) {
   <div class="container-fluid">
     <div class="card">
       <div class="card-header"><h3 class="card-title">Listado</h3></div>
-      <div class="card-body table-responsive p-0">
+      <div class="card-body table-responsive">
         <table class="table table-hover" id="tablaDesarrollos">
           <thead><tr><th>ID</th><th>Nombre</th><th>Tipo de contrato</th><th>Acciones</th></tr></thead>
           <tbody>
