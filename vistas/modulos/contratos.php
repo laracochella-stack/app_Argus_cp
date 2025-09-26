@@ -11,6 +11,10 @@ $clienteId = isset($_GET['cliente_id']) ? intval($_GET['cliente_id']) : null;
 //ControladorContratos::ctrEditarContrato();
 // Obtener lista de contratos
 $contratos = ControladorContratos::ctrMostrarContratos($clienteId);
+
+// Actualizar estatus de contratos Activos/Arvhivados
+ControladorContratos::ctrActualizarEstatusMasivo();
+
 // Generar listas únicas de desarrollos y tipos para filtros
 $desarrollosLista = [];
 $tiposLista = [];
@@ -47,60 +51,75 @@ foreach ($varsTipoContrato as $var) {
       <div class="card-body">
         <!-- Filtros -->
         <div class="row mb-3">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Filtrar por desarrollo</label>
             <select id="filtroDesarrollo" class="form-select">
               <option value="">Todos</option>
               <?php foreach ($desarrollosLista as $des) : ?>
                 <option value="<?php echo htmlspecialchars($des, ENT_QUOTES); ?>"><?php echo htmlspecialchars($des); ?></option>
               <?php endforeach; ?>
-            </select>
+            </select>   
           </div>
-          <div class="col-md-4">
-            
-            <div id="accionesContrato" class="mt-3" style="display:none;"> 
-              <label class="form-label">Filtrar por tipo de contrato</label> 
-              <div id="contenedorBotones">sdsadasd</div>
+          <div class="col-md-3 d-flex justify-content-center align-items-center">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleArchivados">
+              <label class="form-check-label ms-2" for="toggleArchivados">Mostrar archivados</label>
+            </div>            
+          </div>        
+          <div class="col-md-4">            
+            <div id="accionesContrato" class="mt-3" style="display:none;">
+              <h5 class="mb-2">Acciones para <span id="selCount">0</span> seleccionados</h5>
+              <div id="contenedorBotones"></div>
             </div>
           </div>
         </div>
         <div class="table-responsive">
+ 
+                  <!-- CSRF para AJAX -->
+          <form id="formContratosAccion" action="index.php?ruta=contratos" method="post" style="display:none;">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+          </form>
+
           <table class="table table-hover" id="tablaContratos">
-  <thead>
-    <tr>
-      <th></th> <!-- columna nueva para selección -->
-      <th>ID</th>
-      <th>Creado el</th>
-      <th>Creado por</th>
-      <th>Folio</th>
-      <th>Cliente</th>
-      <th>Desarrollo</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    <?php foreach ($contratos as $ct) : ?>
-    <tr data-contrato-id="<?php echo (int)$ct['id']; ?>" data-estatus="<?php echo (int)$ct['estatus']; ?>">
-      <!-- Checkbox de selección -->
-      <td><input type="checkbox" class="select-contrato"></td>
-      <td><?php echo $ct['id']; ?></td>
-      <td><?php echo htmlspecialchars($ct['created_at']); ?></td>
-      <td><?php echo htmlspecialchars($ct['nombre_corto']); ?></td>
-      <td><?php echo htmlspecialchars($ct['folio'] ?? ''); ?></td>
-      <td><?php echo htmlspecialchars($ct['nombre_cliente']); ?></td>
-      <td><?php echo htmlspecialchars($ct['nombre_desarrollo']); ?></td>
-      <td>
-        <button type="button"
-                class="btn btn-success btn-sm btnGenerarContrato"
-                data-contrato-id="<?php echo $ct['id']; ?>"
-                title="Generar contrato">
-          <i class="fas fa-file-alt"></i>
-        </button>
-      </td>
-    </tr>
-    <?php endforeach; ?>
-  </tbody>
-</table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>ID</th>
+                <th>Creado el</th>
+                <th>Creado por</th>
+                <th>Folio</th>
+                <th>Cliente</th>
+                <th>Desarrollo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($contratos as $ct): ?>
+              
+              <tr data-contrato-id="<?php echo (int)$ct['id']; ?>"
+                  data-estatus="<?php echo isset($ct['estatus']) ? (int)$ct['estatus'] : 0; ?>">
+                <td><input type="checkbox" class="select-contrato"></td>
+                <td><?php echo (int)$ct['id']; ?></td>
+                <td><?php echo htmlspecialchars($ct['created_at']); ?></td>
+                <td><?php echo htmlspecialchars($ct['nombre_corto'] ?? '—'); ?></td>
+                <td><?php echo htmlspecialchars($ct['folio'] ?? ''); ?></td>
+                <td><?php echo htmlspecialchars($ct['nombre_cliente']); ?></td>
+                <td><?php echo htmlspecialchars($ct['nombre_desarrollo']); ?></td>
+                <td>
+                  <button type="button" class="btn btn-success btn-sm btnGenerarContrato"
+                          data-contrato-id="<?php echo (int)$ct['id']; ?>">
+                    <i class="fas fa-file-alt"></i>
+                  </button>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+            </tbody>
+          </table>
+
+          <!-- Contenedor de acciones por selección -->
+            
+
+
 
 
         </div>

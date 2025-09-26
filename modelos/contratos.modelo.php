@@ -142,4 +142,25 @@ class ModeloContratos
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    // Actualiza el estatus de múltiples contratos de forma masiva.
+    // Recibe un array de IDs y el nuevo estatus (0 o 1).
+    // Devuelve true si se actualizó al menos un registro, false en caso contrario.
+
+    public static function mdlActualizarEstatusMasivo(array $ids, int $nuevoEstatus): bool
+    {
+        if (empty($ids)) return false;
+
+        $pdo = Conexion::conectar();
+        // placeholders dinámicos
+        $marks = implode(',', array_fill(0, count($ids), '?'));
+        $sql = "UPDATE argus_contratos_data SET estatus = ? WHERE id IN ($marks)";
+        $stmt = $pdo->prepare($sql);
+
+        // bind: primero estatus, luego ids
+        $params = array_merge([$nuevoEstatus], $ids);
+
+        return $stmt->execute($params);
+    }
+
 }

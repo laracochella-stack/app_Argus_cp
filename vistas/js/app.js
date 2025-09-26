@@ -817,34 +817,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 pageLength: 20,
                 language: esLang,
                 responsive: true,
-                order: [[1, 'dec']] // Ordenar por segunda columna (índice 1) descendente por defecto
+                order: [[1, 'desc']]
             });
-            // Filtros por desarrollo y tipo de contrato
-            const filtroDesarrollo = document.getElementById('filtroDesarrollo');
-            const filtroTipo = document.getElementById('filtroTipo');
-            if (filtroDesarrollo) {
-                filtroDesarrollo.addEventListener('change', function () {
-                    const val = this.value;
-                    if (val) {
-                        // columna 2: Desarrollo
-                        dataTableContratos.column(4).search('^' + val + '$', true, false).draw();
-                    } else {
-                        dataTableContratos.column(4).search('').draw();
-                    }
-                });
-            }
-            if (filtroTipo) {
-                filtroTipo.addEventListener('change', function () {
-                    const val = this.value;
-                    if (val) {
-                        // columna 3: Tipo contrato
-                        dataTableContratos.column(3).search('^' + val + '$', true, false).draw();
-                    } else {
-                        dataTableContratos.column(3).search('').draw();
-                    }
+
+            // 👇 Aquí añadimos el filtro por estatus
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                const row = dataTableContratos.row(dataIndex).node();
+                const estatus = row.getAttribute("data-estatus");
+                const mostrarArchivados = document.getElementById('toggleArchivados').checked;
+
+                if (mostrarArchivados) {
+                    return estatus === "0"; // mostrar solo archivados
+                } else {
+                    return estatus === "1"; // mostrar solo activos
+                }
+            });
+
+            // Redibujar tabla al cargar
+            dataTableContratos.draw();
+
+            // Redibujar cuando cambie el toggle
+            const toggleArchivados = document.getElementById('toggleArchivados');
+            if (toggleArchivados) {
+                toggleArchivados.addEventListener('change', function () {
+                    dataTableContratos.draw();
                 });
             }
         }
+
+
     }
 
     /*
@@ -2074,75 +2075,129 @@ document.addEventListener('DOMContentLoaded', () => {
          * botones se muestran u ocultan según el estado de los contratos
          * seleccionados.
          */
-        document.addEventListener("DOMContentLoaded", function () {
+        
             const tabla = document.getElementById("tablaContratos");
-            const contenedorAcciones = document.getElementById("accionesContrato");
-            const contenedorBotones = document.getElementById("contenedorBotones");
+            const acciones = document.getElementById("accionesContrato");
+            const contBotones = document.getElementById("contenedorBotones");
+            const selCount = document.getElementById("selCount");
+            const formAccion = document.getElementById("formContratosAccion"); // 👉 pequeño form oculto
 
-            if (tabla) {
-                tabla.addEventListener("change", function (e) {
-                if (e.target.classList.contains("select-contrato")) {
-                    // Limpiamos botones previos
-                    contenedorBotones.innerHTML = "";
+            if (!tabla) return;
 
-                    // Obtenemos fila seleccionada
-                    const fila = e.target.closest("tr");
-                    const contratoId = fila.dataset.contratoId;
-                    const estatus = fila.dataset.estatus;
+            const seleccionados = new Set();
+            let estatusSeleccion = null;
 
-                    if (e.target.checked) {
-                    contenedorAcciones.style.display = "block";
-
-                    if (estatus === "1") {
-                        // Contrato activo
-                        contenedorBotones.innerHTML = `
-                        <button class="btn btn-warning btn-sm" data-accion="cancelar" data-id="${contratoId}">
-                            <i class="fas fa-ban"></i> Cancelar
-                        </button>
-                        <button class="btn btn-info btn-sm" data-accion="editar" data-id="${contratoId}">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        `;
-                    } else {
-                        // Contrato cancelado
-                        contenedorBotones.innerHTML = `
-                        <button class="btn btn-success btn-sm" data-accion="reactivar" data-id="${contratoId}">
-                            <i class="fas fa-check"></i> Reactivar
-                        </button>
-                        `;
-                    }
-                    } else {
-                    contenedorAcciones.style.display = "none";
-                    }
+            function renderAcciones() {
+                const count = seleccionados.size;
+                selCount.textContent = count;
+                if (count === 0) {
+                acciones.style.display = "none";
+                contBotones.innerHTML = "";
+                estatusSeleccion = null;
+                return;
                 }
-                });
+                acciones.style.display = "block";
+
+                if (estatusSeleccion === 1) {
+                contBotones.innerHTML = `
+                    <button class="btn btn-warning btn-sm" id="btnArchivar">
+                    <i class="fas fa-box-archive"></i> Archivar
+                    </button>`;
+                } else {
+                contBotones.innerHTML = `
+                    <button class="btn btn-success btn-sm" id="btnDesarchivar">
+                    <i class="fas fa-rotate-left"></i> Desarchivar
+                    </button>`;
+                }
             }
 
-            // Delegación para manejar clics en los botones dinámicos
+            tabla.addEventListener("change", function (e) {
+                if (!e.target.classList.contains("select-contrato")) return;
+                const fila = e.target.closest("tr");
+                const id = fila.dataset.contratoId;
+                const estatus = parseInt(fila.dataset.estatus || "0", 10);
+
+                if (e.target.checked) {
+                if (seleccionados.size === 0) {
+                    estatusSeleccion = estatus;
+                    seleccionados.add(id);
+                } else {
+                    if (estatus !== estatusSeleccion) {
+                    e.target.checked = false;
+                    Swal.fire("Selección inválida",
+                        "Solo puedes seleccionar filas con el mismo estatus.",
+                        "warning");
+                    return;
+                    }
+                    seleccionados.add(id);
+                }
+                } else {
+                seleccionados.delete(id);
+                if (seleccionados.size === 0) estatusSeleccion = null;
+                }
+                renderAcciones();
+            });
+
             document.addEventListener("click", function (e) {
-                if (e.target.closest("[data-accion]")) {
-                const btn = e.target.closest("[data-accion]");
-                const accion = btn.dataset.accion;
-                const contratoId = btn.dataset.id;
+                const btn = e.target.closest("#btnArchivar, #btnDesarchivar");
+                if (!btn) return;
 
-                switch (accion) {
-                    case "cancelar":
-                    Swal.fire("Cancelar", `Cancelar contrato #${contratoId}`, "warning");
-                    break;
-                    case "editar":
-                    Swal.fire("Editar", `Editar contrato #${contratoId}`, "info");
-                    break;
-                    case "reactivar":
-                    Swal.fire("Reactivar", `Reactivar contrato #${contratoId}`, "success");
-                    break;
-                }
-                }
+                const ids = Array.from(seleccionados);
+                const nuevoEstatus = btn.id === "btnArchivar" ? 0 : 1;
+                const accionTexto = nuevoEstatus === 0 ? "Archivar" : "Desarchivar";
+
+                Swal.fire({
+                title: `${accionTexto} ${ids.length} contrato(s)?`,
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: `Sí, ${accionTexto.toLowerCase()}`,
+                cancelButtonText: "Cancelar"
+                }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                // 👉 Reutilizamos la misma estructura que crearContrato
+                const formData = new FormData(formAccion);
+                formData.append("actualizarEstatusMasivo", "1");
+                formData.append("ids", ids.join(","));
+                formData.append("nuevo_estatus", String(nuevoEstatus));
+
+                const url = formAccion.getAttribute("action");
+
+                fetch(url, {
+                    method: "POST",
+                    body: formData
+                }).then(r => r.text()).then(resp => {
+                    let title, text, icon;
+                    if (resp.includes("ok")) {
+                    title = "Hecho";
+                    text = `Contratos ${accionTexto.toLowerCase()}dos correctamente.`;
+                    icon = "success";
+                    window.location.reload();
+
+                    // refrescar UI
+                    ids.forEach(id => {
+                        const tr = tabla.querySelector(`tr[data-contrato-id="${id}"]`);
+                        if (tr) {
+                        tr.dataset.estatus = String(nuevoEstatus);
+                        const cb = tr.querySelector(".select-contrato");
+                        if (cb) cb.checked = false;
+                        }
+                    });
+                    seleccionados.clear();
+                    estatusSeleccion = null;
+                    renderAcciones();
+                    } else {
+                    title = "Error";
+                    text = "No se pudo actualizar.";
+                    icon = "error";
+                    }
+                    Swal.fire(title, text, icon);
+                }).catch(() => {
+                    Swal.fire("Error", "No se pudo conectar con el servidor.", "error");
+                });
+                });
             });
-            });
+  
 
-
-
-
-
-
+           
 });

@@ -480,172 +480,7 @@ class ControladorContratos
         return $resultado;
     }
 
-    /**
-     * Edita un contrato existente. Procesa el formulario de edición de contrato
-     * enviado desde la vista. Se identifica el contrato por su ID y se guarda
-     * un nuevo JSON con los datos actualizados.
-     *//*
-    static public function ctrEditarContrato()
-    {
-        if (!isset($_POST['editarContrato'])) {
-            return;
-        }
-        // Debe haber sesión iniciada
-        if (!isset($_SESSION['iniciarSesion']) || $_SESSION['iniciarSesion'] !== 'ok') {
-            echo 'error-sesion';
-            return;
-        }
-        // Validar token CSRF
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
-            echo 'error-token';
-            return;
-        }
-        $contratoId = intval($_POST['contrato_id']);
-        $mensualidades = intval($_POST['mensualidades']);
-        $superficie = trim($_POST['superficie']);
-        // Superficie fija recibida desde el formulario (texto en letras)
-        $superficieFixed = isset($_POST['superficie_fixed']) ? trim($_POST['superficie_fixed']) : '';
-        // Nuevos campos recibidos para edición
-        $montoInmueble      = isset($_POST['monto_inmueble']) ? floatval($_POST['monto_inmueble']) : 0;
-        $montoInmuebleFixed = isset($_POST['monto_inmueble_fixed']) ? trim($_POST['monto_inmueble_fixed']) : '';
-        $enganche           = isset($_POST['enganche']) ? floatval($_POST['enganche']) : 0;
-        $engancheFixed      = isset($_POST['enganche_fixed']) ? trim($_POST['enganche_fixed']) : '';
-        $saldoPago          = isset($_POST['saldo_pago']) ? floatval($_POST['saldo_pago']) : 0;
-        $saldoPagoFixed     = isset($_POST['saldo_pago_fixed']) ? trim($_POST['saldo_pago_fixed']) : '';
-        $parcialidades      = isset($_POST['parcialidades_anuales']) ? trim($_POST['parcialidades_anuales']) : '';
-        $penalizacion       = isset($_POST['penalizacion']) ? floatval($_POST['penalizacion']) : 0;
-        $penalizacionFixed  = isset($_POST['penalizacion_fixed']) ? trim($_POST['penalizacion_fixed']) : '';
-        $vigenciaPagare     = isset($_POST['vigencia_pagare']) ? trim($_POST['vigencia_pagare']) : '';
-        // Nuevos campos: folio, rango de pago (inicio y fin), pago mensual y fecha de contrato
-        $folio              = isset($_POST['folio']) ? strtoupper(trim($_POST['folio'])) : '';
-        $rangoInicioRaw     = isset($_POST['rango_pago_inicio']) ? trim($_POST['rango_pago_inicio']) : '';
-        $rangoFinRaw        = isset($_POST['rango_pago_fin']) ? trim($_POST['rango_pago_fin']) : '';
-        $pagoMensual        = isset($_POST['pago_mensual']) ? floatval($_POST['pago_mensual']) : 0;
-        $pagoMensualFixed   = isset($_POST['pago_mensual_fixed']) ? trim($_POST['pago_mensual_fixed']) : '';
-        $fechaContrato      = isset($_POST['fecha_contrato']) ? trim($_POST['fecha_contrato']) : '';
-        $fechaContratoFixed = isset($_POST['fecha_contrato_fixed']) ? trim($_POST['fecha_contrato_fixed']) : '';
-        // Recoger lista de fracciones para edición
-        $fracciones = [];
-        if (isset($_POST['fracciones'])) {
-            $temp = trim($_POST['fracciones']);
-            if ($temp) {
-                $decoded = null;
-                try {
-                    $decoded = json_decode($temp, true);
-                } catch (Exception $e) {
-                    $decoded = null;
-                }
-                if (is_array($decoded)) {
-                    $fracciones = array_filter($decoded, function ($v) {
-                        return $v !== '';
-                    });
-                } else {
-                    $fracciones = array_filter(array_map('trim', explode(',', $temp)), function ($v) {
-                        return $v !== '';
-                    });
-                }
-            }
-        }
-        // Convertir a cadena separada por comas
-        $fraccion = implode(',', $fracciones);
-        $entrega = $_POST['entrega_posecion'];
-        $fechaFirma = $_POST['fecha_firma'];
-        // Contenido habitacional como texto (sin WYSIWYG), convertir a mayúsculas
-        $habitacional = isset($_POST['habitacional']) ? strtoupper(trim($_POST['habitacional'])) : '';
-        $inicioPagos = $_POST['inicio_pagos'];
-        $tipoContrato = trim($_POST['tipo_contrato']);
-        // Obtener datos actuales del contrato para conservar información de cliente y desarrollo
-        $contratoActual = ModeloContratos::mdlMostrarContratoPorId($contratoId);
-        if (!$contratoActual) {
-            echo 'error';
-            return;
-        }
-        // Decodificar json anterior para obtener estructura de cliente y desarrollo
-        $clienteData = [];
-        $desarrolloData = [];
-        if (!empty($contratoActual['datta_contrato'])) {
-            $jsonOld = json_decode($contratoActual['datta_contrato'], true);
-            $clienteData = $jsonOld['cliente'] ?? [];
-            $desarrolloData = $jsonOld['desarrollo'] ?? [];
-        }
-        // Función para convertir una fecha YYYY-MM-DD a "DD de Mes de YYYY"
-        $formatearFechaLarga = function ($fecha) {
-            if (!$fecha) return '';
-            $meses = [
-                'enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'
-            ];
-            $partes = explode('-', $fecha);
-            if (count($partes) === 3) {
-                $anio = $partes[0];
-                $mes = (int)$partes[1];
-                $dia = (int)$partes[2];
-                $mesNombre = $meses[$mes - 1] ?? '';
-                return $dia . ' de ' . ucfirst($mesNombre) . ' de ' . $anio;
-            }
-            return $fecha;
-        };
-        // Convertir fechas a formato largo
-        $entregaLong   = $formatearFechaLarga($entrega);
-        $firmaLong     = $formatearFechaLarga($fechaFirma);
-        $inicioLong    = $formatearFechaLarga($inicioPagos);
-        $vigenciaLong  = $formatearFechaLarga($vigenciaPagare);
-        $rangoInicio   = $formatearFechaLarga($rangoInicioRaw);
-        $rangoFin      = $formatearFechaLarga($rangoFinRaw);
-        $rangoPago     = ($rangoInicio && $rangoFin) ? ($rangoInicio . ' a ' . $rangoFin) : ($rangoInicio ?: $rangoFin);
-        // Fecha del contrato en formato largo
-        $fechaContratoLong = $formatearFechaLarga($fechaContrato);
-        // Calcular día de inicio a partir de fecha de contrato
-        $diaInicio = '';
-        if ($fechaContrato) {
-            $partesFechaEd = explode('-', $fechaContrato);
-            if (count($partesFechaEd) === 3) {
-                $diaInicio = intval($partesFechaEd[2]);
-            }
-        }
-        $contratoDetalle = [
-            'folio'                      => $folio,
-            'mensualidades'              => $mensualidades,
-            'superficie'                 => $superficie,
-            'superficie_fixed'           => $superficieFixed,
-            'fraccion_vendida'           => $fraccion,
-            'entrega_posecion'           => $entregaLong,
-            'fecha_firma_contrato'       => $firmaLong,
-            'habitacional_colindancias'  => $habitacional,
-            'inicio_pagos'               => $inicioLong,
-            'tipo_contrato'              => $tipoContrato,
-            // Montos y pagos
-            'monto_precio_inmueble'       => number_format($montoInmueble, 2, '.', ','),
-            'monto_precio_inmueble_fixed' => $montoInmuebleFixed,
-            'enganche'                    => number_format($enganche, 2, '.', ','),
-            'enganche_fixed'              => $engancheFixed,
-            'saldo_pago'                  => number_format($saldoPago, 2, '.', ','),
-            'saldo_pago_fixed'            => $saldoPagoFixed,
-            'parcialidades_anuales'       => $parcialidades,
-            'penalizacion_10'             => number_format($penalizacion, 2, '.', ','),
-            'penalizacion_10_fixed'       => $penalizacionFixed,
-            // Pago mensual
-            'pago_mensual'                => number_format($pagoMensual, 2, '.', ','),
-            'pago_mensual_fixed'          => $pagoMensualFixed,
-            // Fecha del contrato y su versión fija
-            'fecha_contrato'              => $fechaContratoLong,
-            'fecha_contrato_fixed'        => $fechaContratoFixed,
-            // Rango de pago tanto unido como separado
-            'rango_pago_inicio'           => $rangoInicio,
-            'rango_pago_fin'              => $rangoFin,
-            'rango_pago'                  => $rangoPago,
-            // Día de inicio
-            'dia_inicio'                  => $diaInicio,
-            'vigencia_pagare'             => $vigenciaLong
-        ];
-        $jsonData = json_encode([
-            'cliente' => $clienteData,
-            'desarrollo' => $desarrolloData,
-            'contrato' => $contratoDetalle
-        ], JSON_UNESCAPED_UNICODE);
-        $respuesta = ModeloContratos::mdlEditarContrato($contratoId, $jsonData);
-        echo $respuesta;
-    }*/
-
+    
     /**
      * Genera un documento de contrato en formato DOCX y PDF a partir del registro
      * existente de un contrato. Este método lee los datos JSON almacenados en la
@@ -850,185 +685,38 @@ class ControladorContratos
         }
     }
 
-    /**
-     * Proceso completo para crear un cliente y su contrato en un único formulario.
-     * Este método recoge los datos de cliente y contrato enviados desde la ruta
-     * crearContrato y los guarda en sus respectivas tablas. Devuelve cadenas
-     * indicativas de éxito o error directamente al navegador.
-     *//*
-    static public function ctrCrearContratoCompletoLC()
-    {
-        if (!isset($_POST['crearContratoCompleto'])) {
-            return;
-        }
-        if (!isset($_SESSION['iniciarSesion']) || $_SESSION['iniciarSesion'] !== 'ok') {
-            echo 'error_sesion';
-            return;
-        }
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
-            echo 'error_token';
-            return;
-        }
-        // Normalizar keys del formulario a las que espera el controlador
-        $aliases = [
-        'nombre_cliente'           => 'cliente_nombre',
-        'nacionalidad_cliente'     => 'cliente_nacionalidad',
-        'fecha_nacimiento_cliente' => 'cliente_fecha_nacimiento',
-        'rfc_cliente'              => 'cliente_rfc',
-        'curp_cliente'             => 'cliente_curp',
-        'ine_cliente'              => 'cliente_ine',
-        'estado_civil_cliente'     => 'cliente_estado_civil',
-        'ocupacion_cliente'        => 'cliente_ocupacion',
-        'telefono_cliente'         => 'cliente_telefono',
-        'domicilio_cliente'        => 'cliente_domicilio',
-        'email_cliente'            => 'cliente_email',
-        'beneficiario_cliente'     => 'cliente_beneficiario',
-        // contrato
-        'superficie'               => 'contrato_superficie',
-        ];
+    // Actualiza el estatus de múltiples contratos de forma masiva.
+    // Recibe por POST un CSV de IDs y el nuevo estatus (0 o 1).
+    // Requiere sesión iniciada y token CSRF válido.
+        public static function ctrActualizarEstatusMasivo()
+        {
+            if (!isset($_POST['actualizarEstatusMasivo'])) return;
 
-        foreach ($aliases as $expected => $fromForm) {
-        if (!isset($_POST[$expected]) && isset($_POST[$fromForm])) {
-            $_POST[$expected] = $_POST[$fromForm];
-        }
-        }
-
-        // Helper para convertir fecha YYYY-MM-DD a "DD de Mes de YYYY"
-        $formatearFechaLarga = function ($fecha) {
-            if (!$fecha) return '';
-            $meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO',
-                    'JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
-            $partes = explode('-', $fecha);
-            if (count($partes) === 3) {
-                $anio = $partes[0];
-                $mes = (int)$partes[1];
-                $dia = (int)$partes[2];
-                $mesNombre = $meses[$mes - 1] ?? '';
-                return $dia . ' DE ' . ucfirst($mesNombre) . ' DE ' . $anio;
+            // Sesión y CSRF
+            if (!isset($_SESSION['iniciarSesion']) || $_SESSION['iniciarSesion'] !== 'ok') {
+                echo 'error-sesion'; exit;
             }
-            return $fecha;
-        };
-
-        // Formatear montos numéricos (ej: 240,509.03)
-        $formatearMonto = function ($valor) {
-            if ($valor === null || $valor === '') return '';
-            return number_format((float)$valor, 2, '.', ',');
-        };
-
-        // Convertir número a letras (requiere extensión intl habilitada)
-        $numeroALetras = function ($numero) {
-            if (!class_exists('NumberFormatter')) return $numero;
-            $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
-            $entero = floor($numero);
-            $decimales = round(($numero - $entero) * 100);
-            $letras = strtoupper($formatter->format($entero));
-            return $numero . " (" . $letras . " PESOS " . str_pad($decimales, 2, '0', STR_PAD_LEFT) . "/100 M.N.)";
-        };
-
-        // ================= CLIENTE =================
-        $datosCliente = [
-            'nombre'       => trim($_POST['nombre_cliente']),
-            'nacionalidad' => trim($_POST['nacionalidad_cliente']),
-            'fecha'        => $_POST['fecha_nacimiento_cliente'] ?? null,
-            'rfc'          => trim($_POST['rfc_cliente']),
-            'curp'         => trim($_POST['curp_cliente']),
-            'ine'          => trim($_POST['ine_cliente']),
-            'estado_civil' => trim($_POST['estado_civil_cliente']),
-            'ocupacion'    => trim($_POST['ocupacion_cliente']),
-            'telefono'     => trim($_POST['telefono_cliente']),
-            'domicilio'    => trim($_POST['domicilio_cliente']),
-            'email'        => trim($_POST['email_cliente']),
-            'beneficiario' => trim($_POST['beneficiario_cliente']),
-            // Edad calculada del cliente
-            'edad'         => isset($_POST['cliente_edad']) ? intval($_POST['cliente_edad']) : ''
-        ];
-        $clienteId = ModeloClientes::mdlAgregarClienteRetId($datosCliente);
-        if (!$clienteId) {
-            echo 'error_cliente';
-            return;
-        }
-
-        // ================= CONTRATO =================
-        $desarrolloId = intval($_POST['desarrollo_id']);
-        $folio = trim($_POST['folio'] ?? '');
-        $mensualidades = intval($_POST['mensualidades']);
-        $superficie = trim($_POST['superficie']);
-
-        // Fracciones
-        $fraccion = '';
-        if (!empty($_POST['fracciones'])) {
-            $decoded = json_decode($_POST['fracciones'], true);
-            if (is_array($decoded)) {
-                $fraccion = implode(',', array_filter($decoded));
-            } else {
-                $fraccion = trim($_POST['fracciones']);
+            if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== ($_SESSION['csrf_token'] ?? '')) {
+                echo 'error-token'; exit;
             }
+
+            // Entrada
+            $idsCsv = trim($_POST['ids'] ?? '');
+            $nuevo = isset($_POST['nuevo_estatus']) ? (int)$_POST['nuevo_estatus'] : -1;
+
+            if ($idsCsv === '' || ($nuevo !== 0 && $nuevo !== 1)) {
+                echo 'error'; exit;
+            }
+
+            // Normalizar IDs
+            $ids = array_values(array_filter(array_map('intval', explode(',', $idsCsv)), fn($v) => $v > 0));
+            if (empty($ids)) { echo 'error'; exit; }
+
+            $ok = ModeloContratos::mdlActualizarEstatusMasivo($ids, $nuevo);
+            echo $ok ? 'ok' : 'error';
+            exit;
         }
 
-        // Fechas
-        $fechaFirma      = $formatearFechaLarga($_POST['fecha_firma'] ?? '');
-        $entregaPosecion = $formatearFechaLarga($_POST['entrega_posecion'] ?? '');
-        $inicioPagos     = $formatearFechaLarga($_POST['inicio_pagos'] ?? '');
-        $habitacional    = trim($_POST['habitacional']);
-        $tipoContrato    = trim($_POST['tipo_contrato']);
 
-        $rangoInicio = $formatearFechaLarga($_POST['rango_pago_inicio'] ?? '');
-        $rangoFin    = $formatearFechaLarga($_POST['rango_pago_fin'] ?? '');
-        $rangoPago   = $rangoInicio && $rangoFin ? "$rangoInicio a $rangoFin" : ($rangoInicio ?: $rangoFin);
-
-        // Montos
-        $montoInmueble  = floatval($_POST['monto_inmueble'] ?? 0);
-        $enganche       = floatval($_POST['enganche'] ?? 0);
-        $saldoPago      = floatval($_POST['saldo_pago'] ?? 0);
-        $penalizacion   = floatval($_POST['penalizacion'] ?? 0);
-        $pagoMensual    = floatval($_POST['pago_mensual'] ?? 0);
-
-        $vigenciaPagare = $formatearFechaLarga($_POST['vigencia_pagare'] ?? '');
-
-        // Construcción del detalle
-        $contratoDetalle = [
-            'folio'                       => $folio,
-            'mensualidades'               => $mensualidades,
-            'superficie'                  => $superficie,
-            'fraccion_vendida'            => $fraccion,
-            'entrega_posecion'            => $entregaPosecion,
-            'fecha_firma_contrato'        => $fechaFirma,
-            'habitacional_colindancias'   => $habitacional,
-            'inicio_pagos'                => $inicioPagos,
-            'tipo_contrato'               => $tipoContrato,
-            'monto_precio_inmueble'       => $montoInmueble,
-            'monto_precio_inmueble_fixed' => $numeroALetras($montoInmueble),
-            'enganche'                    => $enganche,
-            'enganche_fixed'              => $numeroALetras($enganche),
-            'saldo_pago'                  => $saldoPago,
-            'saldo_pago_fixed'            => $numeroALetras($saldoPago),
-            'parcialidades_anuales'       => $_POST['parcialidades_anuales'] ?? '',
-            'penalizacion_10'             => $penalizacion,
-            'penalizacion_10_fixed'       => $numeroALetras($penalizacion),
-            'pago_mensual'                => $pagoMensual,
-            'pago_mensual_fixed'          => $numeroALetras($pagoMensual),
-            'rango_pago'                  => $rangoPago,
-            'vigencia_pagare'             => $vigenciaPagare
-        ];
-
-        // ================= JSON FINAL =================
-        $clienteData    = $datosCliente;
-        $desarrolloData = ModeloDesarrollos::mdlMostrarDesarrolloPorId($desarrolloId);
-
-        $jsonData = json_encode([
-            'cliente'    => $clienteData,
-            'desarrollo' => $desarrolloData,
-            'contrato'   => $contratoDetalle
-        ], JSON_UNESCAPED_UNICODE);
-
-        $datosContrato = [
-            'cliente_id'     => $clienteId,
-            'desarrollo_id'  => $desarrolloId,
-            'datta_contrato' => $jsonData
-        ];
-
-        $res = ModeloContratos::mdlCrearContrato($datosContrato);
-        echo $res;
-    }*/
 
 }
