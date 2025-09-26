@@ -30,27 +30,37 @@ if (($_SESSION['permission'] ?? '') !== 'admin') {
           <!-- Token CSRF -->
           <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
           <div class="row">
-            <div class="col-md-3 mb-3">
+            <div class="col-md-6 mb-6">
+              <label class="form-label">Alias</label>
+              <input type="text" name="nuevoNombre" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-6">
               <label class="form-label">Nombre de usuario</label>
               <input type="text" name="nuevoUsuario" class="form-control" required>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-6 mb-6">
               <label class="form-label">Contraseña</label>
               <input type="password" name="nuevoPassword" class="form-control" required>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-6 mb-6">
               <label class="form-label">Repetir contraseña</label>
               <input type="password" name="repetirPassword" class="form-control" required>
             </div>
-            <div class="col-md-3 mb-3">
+            <div class="col-md-6 mb-6">
               <label class="form-label">Rol</label>
               <select name="nuevoRol" class="form-select" required>
                 <option value="user">Usuario</option>
                 <option value="admin">Administrador</option>
               </select>
             </div>
+            
           </div>
-          <button type="submit" class="btn btn-primary">Guardar usuario</button>
+          <div class="col-md-12 mb-12">   
+              <div class="form-text">El rol "Usuario" tiene permisos limitados. Sólo los administradores pueden crear usuarios con rol "Administrador".</div>
+            </div>
+            <div class="col-md-6 mb-6">
+              <button type="submit" class="btn btn-primary btn-sm">Guardar usuario</button>
+            </div>
         </form>
       </div>
     </div>
@@ -60,12 +70,13 @@ if (($_SESSION['permission'] ?? '') !== 'admin') {
       <div class="card-body table-responsive p-0">
         <table class="table table-hover">
           <thead>
-            <tr><th>ID</th><th>Usuario</th><th>Permiso</th><th>Fecha alta</th><th>Acciones</th></tr>
+            <tr><th>ID</th><th>Alias</th><th>Usuario</th><th>Permiso</th><th>Fecha alta</th><th>Acciones</th></tr>
           </thead>
           <tbody>
             <?php foreach ($usuarios as $u) : ?>
             <tr>
               <td><?php echo $u['id']; ?></td>
+              <td><?php echo htmlspecialchars($u['nombre_corto']); ?></td>
               <td><?php echo htmlspecialchars($u['username']); ?></td>
               <td><?php echo htmlspecialchars($u['permission']); ?></td>
               <td><?php echo htmlspecialchars($u['created_at']); ?></td>

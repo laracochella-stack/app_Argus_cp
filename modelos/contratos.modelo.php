@@ -79,6 +79,7 @@ class ModeloContratos
         if ($clienteId !== null) {
             $stmt = $pdo->prepare(
                 "SELECT c.id, c.cliente_id, c.desarrollo_id, c.datta_contrato, c.created_at,
+                        c.estatus,
                         cl.nombre AS nombre_cliente, d.nombre AS nombre_desarrollo, d.tipo_contrato AS tipo_contrato,
                         d.lotes_disponibles
                  FROM argus_contratos_data c
@@ -90,6 +91,7 @@ class ModeloContratos
         } else {
             $stmt = $pdo->prepare(
                 "SELECT c.id, c.cliente_id, c.desarrollo_id, c.datta_contrato, c.created_at,
+                        c.estatus,
                         cl.nombre AS nombre_cliente, d.nombre AS nombre_desarrollo, d.tipo_contrato AS tipo_contrato,
                         d.lotes_disponibles
                  FROM argus_contratos_data c
@@ -132,7 +134,7 @@ class ModeloContratos
     static public function mdlMostrarContratoPorId($idContrato)
     {
         $stmt = Conexion::conectar()->prepare(
-            "SELECT c.id, c.cliente_id, c.desarrollo_id, c.datta_contrato
+            "SELECT c.id, c.cliente_id, c.desarrollo_id, c.datta_contrato, c.estatus
              FROM argus_contratos_data c
              WHERE c.id = :id LIMIT 1"
         );

@@ -227,6 +227,7 @@ class ControladorContratos
         }
         // ----- Datos del contrato -----
         $folio         = isset($_POST['folio']) ? strtoupper(trim($_POST['folio'])) : '';
+        $nombreCortoUsuario = $_SESSION['nombre_corto'] ?? 'USUARIO_DESCONOCIDO';
         $mensualidades = isset($_POST['mensualidades']) ? intval($_POST['mensualidades']) : 0;
         $superficie    = isset($_POST['contrato_superficie']) ? trim($_POST['contrato_superficie']) : '';
         // Procesar fracciones (puede venir como JSON o lista separada por comas)
@@ -292,7 +293,7 @@ class ControladorContratos
             $entero = floor($numero); // tomamos solo la parte entera
             $letras = strtoupper($formatter->format($entero));
 
-            return $numero . "M²". " (" . $letras . "METROS CUADRADOS)";
+            return $numero . " M²". " (" . $letras . "METROS CUADRADOS)";
         };
 
 
@@ -310,9 +311,10 @@ class ControladorContratos
         // Construir detalle del contrato
         $contratoDetalle = [
             'folio'                      => $folio,
+            'nombre_corto'               => $nombreCortoUsuario,
             'mensualidades'              => $mensualidades,
             'superficie'                 => $superficie,
-            'superficie_fixed'              => $numeroASuperficie($superficie),
+            'superficie_fixed'           => $numeroASuperficie($superficie),
             'fraccion_vendida'           => $fraccion,
             'entrega_posecion'           => $entregaLong,
             'fecha_firma_contrato'       => $firmaLong,
@@ -421,7 +423,8 @@ class ControladorContratos
         foreach ($contratos as $c) {
             $row = [
                 'id' => $c['id'],
-                'cliente_id' => $c['cliente_id'],
+                'estatus' => $c['estatus'],  
+                'cliente_id' => $c['cliente_id'], 
                 'nombre_cliente' => $c['nombre_cliente'] ?? '',
                 'desarrollo_id' => $c['desarrollo_id'],
                 'nombre_desarrollo' => $c['nombre_desarrollo'] ?? '',
@@ -456,6 +459,7 @@ class ControladorContratos
                     $row['penalizacion_10_fixed']      = $json['contrato']['penalizacion_10_fixed'] ?? '';
                     // Folio y rango de pago se almacenan en versiones unificadas
                     $row['folio']                      = $json['contrato']['folio'] ?? '';
+                    $row['nombre_corto']               = $json['contrato']['nombre_corto'] ?? '';
                     $row['rango_pago']                 = $json['contrato']['rango_pago'] ?? '';
                     $row['vigencia_pagare']            = $json['contrato']['vigencia_pagare'] ?? '';
                     // Campos de compatibilidad antiguos

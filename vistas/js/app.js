@@ -1929,7 +1929,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })();
 
 
-// tooltip y sincronización de mensualidades y rango de pago
+        // tooltip y sincronización de mensualidades y rango de pago
+
 
         (function () {
         const inputMeses = document.querySelector('input[name="mensualidades"]');
@@ -2065,6 +2066,81 @@ document.addEventListener('DOMContentLoaded', () => {
                 finInput.addEventListener('change', calcularMeses);
             }
         })();
+
+        // === Acciones masivas en contratos (cancelar, reactivar, editar) ===
+        /*
+         * En la vista de contratos, permite seleccionar múltiples contratos y
+         * realizar acciones masivas como cancelar, reactivar o editar. Los
+         * botones se muestran u ocultan según el estado de los contratos
+         * seleccionados.
+         */
+        document.addEventListener("DOMContentLoaded", function () {
+            const tabla = document.getElementById("tablaContratos");
+            const contenedorAcciones = document.getElementById("accionesContrato");
+            const contenedorBotones = document.getElementById("contenedorBotones");
+
+            if (tabla) {
+                tabla.addEventListener("change", function (e) {
+                if (e.target.classList.contains("select-contrato")) {
+                    // Limpiamos botones previos
+                    contenedorBotones.innerHTML = "";
+
+                    // Obtenemos fila seleccionada
+                    const fila = e.target.closest("tr");
+                    const contratoId = fila.dataset.contratoId;
+                    const estatus = fila.dataset.estatus;
+
+                    if (e.target.checked) {
+                    contenedorAcciones.style.display = "block";
+
+                    if (estatus === "1") {
+                        // Contrato activo
+                        contenedorBotones.innerHTML = `
+                        <button class="btn btn-warning btn-sm" data-accion="cancelar" data-id="${contratoId}">
+                            <i class="fas fa-ban"></i> Cancelar
+                        </button>
+                        <button class="btn btn-info btn-sm" data-accion="editar" data-id="${contratoId}">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                        `;
+                    } else {
+                        // Contrato cancelado
+                        contenedorBotones.innerHTML = `
+                        <button class="btn btn-success btn-sm" data-accion="reactivar" data-id="${contratoId}">
+                            <i class="fas fa-check"></i> Reactivar
+                        </button>
+                        `;
+                    }
+                    } else {
+                    contenedorAcciones.style.display = "none";
+                    }
+                }
+                });
+            }
+
+            // Delegación para manejar clics en los botones dinámicos
+            document.addEventListener("click", function (e) {
+                if (e.target.closest("[data-accion]")) {
+                const btn = e.target.closest("[data-accion]");
+                const accion = btn.dataset.accion;
+                const contratoId = btn.dataset.id;
+
+                switch (accion) {
+                    case "cancelar":
+                    Swal.fire("Cancelar", `Cancelar contrato #${contratoId}`, "warning");
+                    break;
+                    case "editar":
+                    Swal.fire("Editar", `Editar contrato #${contratoId}`, "info");
+                    break;
+                    case "reactivar":
+                    Swal.fire("Reactivar", `Reactivar contrato #${contratoId}`, "success");
+                    break;
+                }
+                }
+            });
+            });
+
+
 
 
 

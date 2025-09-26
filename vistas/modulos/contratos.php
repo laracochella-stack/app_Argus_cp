@@ -57,86 +57,52 @@ foreach ($varsTipoContrato as $var) {
             </select>
           </div>
           <div class="col-md-4">
-            <label class="form-label">Filtrar por tipo de contrato</label>
-            <select id="filtroTipo" class="form-select">
-              <option value="">Todos</option>
-              <?php foreach ($tiposLista as $tip) : ?>
-                <option value="<?php echo htmlspecialchars($tip, ENT_QUOTES); ?>"><?php echo htmlspecialchars($mapTiposContrato[$tip] ?? $tip); ?></option>
-              <?php endforeach; ?>
-            </select>
+            
+            <div id="accionesContrato" class="mt-3" style="display:none;"> 
+              <label class="form-label">Filtrar por tipo de contrato</label> 
+              <div id="contenedorBotones">sdsadasd</div>
+            </div>
           </div>
         </div>
         <div class="table-responsive">
           <table class="table table-hover" id="tablaContratos">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Creado el</th>
-                <th>Folio</th>
-                <th>Cliente</th>
-                <th>Desarrollo</th>
-                <!--<th>Tipo de contrato</th>-->
-                
-                
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php foreach ($contratos as $ct) : ?>
-              <tr>
-                <td><?php echo $ct['id']; ?></td>
-                <td><?php echo htmlspecialchars($ct['created_at']); ?></td>
-                <td><?php echo htmlspecialchars($ct['folio'] ?? ''); ?></td>
-                <td><?php echo htmlspecialchars($ct['nombre_cliente']); ?></td>
-                <td><?php echo htmlspecialchars($ct['nombre_desarrollo']); ?></td>
-                <!--<td><?php echo htmlspecialchars($mapTiposContrato[$ct['tipo_contrato']] ?? $ct['tipo_contrato']); ?></td>-->
-                
-                
-                <td>
-                  <!-- Botón editar contrato 
-                    <button type="button" class="btn btn-primary btn-sm btnEditarContrato" data-bs-toggle="modal" data-bs-target="#modalEditarContrato"
-                    data-contrato-id="<?php echo $ct['id']; ?>"
-                    data-mensualidades="<?php echo htmlspecialchars($ct['mensualidades']); ?>"
-                    data-superficie="<?php echo htmlspecialchars($ct['superficie']); ?>"
-                    data-fraccion="<?php echo htmlspecialchars($ct['fraccion_vendida']); ?>"
-                    data-entrega="<?php echo htmlspecialchars($ct['entrega_posecion']); ?>"
-                    data-firma="<?php echo htmlspecialchars($ct['fecha_firma_contrato']); ?>"
-                    data-habitacional="<?php echo htmlspecialchars($ct['habitacional_colindancias']); ?>"
-                    data-inicio="<?php echo htmlspecialchars($ct['inicio_pagos']); ?>"
-                    data-superficie-fixed="<?php echo htmlspecialchars($ct['superficie_fixed'] ?? '', ENT_QUOTES); ?>"
-                    data-pago-mensual="<?php echo htmlspecialchars($ct['pago_mensual'] ?? '', ENT_QUOTES); ?>"
-                    data-pago-mensual-fixed="<?php echo htmlspecialchars($ct['pago_mensual_fixed'] ?? '', ENT_QUOTES); ?>"
-                    data-tipo-id="<?php echo htmlspecialchars($ct['tipo_contrato']); ?>"
-                    data-tipo-nombre="<?php echo htmlspecialchars($mapTiposContrato[$ct['tipo_contrato']] ?? $ct['tipo_contrato']); ?>"
-                    data-lotes="<?php echo htmlspecialchars($ct['lotes_disponibles'], ENT_QUOTES); ?>"
-                    data-monto="<?php echo htmlspecialchars($ct['monto_precio_inmueble'], ENT_QUOTES); ?>"
-                    data-monto-fixed="<?php echo htmlspecialchars($ct['monto_precio_inmueble_fixed'], ENT_QUOTES); ?>"
-                    data-enganche="<?php echo htmlspecialchars($ct['enganche'], ENT_QUOTES); ?>"
-                    data-enganche-fixed="<?php echo htmlspecialchars($ct['enganche_fixed'], ENT_QUOTES); ?>"
-                    data-saldo="<?php echo htmlspecialchars($ct['saldo_pago'], ENT_QUOTES); ?>"
-                    data-saldo-fixed="<?php echo htmlspecialchars($ct['saldo_pago_fixed'], ENT_QUOTES); ?>"
-                    data-parcialidades="<?php echo htmlspecialchars($ct['parcialidades_anuales'], ENT_QUOTES); ?>"
-                    data-penalizacion="<?php echo htmlspecialchars($ct['penalizacion_10'], ENT_QUOTES); ?>"
-                    data-penalizacion-fixed="<?php echo htmlspecialchars($ct['penalizacion_10_fixed'], ENT_QUOTES); ?>"
-                    data-folio="<?php echo htmlspecialchars($ct['folio'] ?? '', ENT_QUOTES); ?>"
-                    data-rango-pago="<?php echo htmlspecialchars($ct['rango_pago'] ?? '', ENT_QUOTES); ?>"
-                    data-vigencia-pagare="<?php echo htmlspecialchars($ct['vigencia_pagare'], ENT_QUOTES); ?>"
-                    data-fecha-contrato="<?php echo htmlspecialchars($ct['fecha_contrato'] ?? '', ENT_QUOTES); ?>"
-                    data-fecha-contrato-fixed="<?php echo htmlspecialchars($ct['fecha_contrato_fixed'] ?? '', ENT_QUOTES); ?>">
-                    <i class="fas fa-pencil-alt"></i>
-                  </button>-->
-                  <!-- Botón generar documento -->
-                  <button type="button"
-                          class="btn btn-success btn-sm btnGenerarContrato"
-                          data-contrato-id="<?php echo $ct['id']; ?>"
-                          title="Generar contrato">
-                    <i class="fas fa-file-alt"></i>
-                  </button>
-                </td>
-              </tr>
-              <?php endforeach; ?>
-            </tbody>
-          </table>
+  <thead>
+    <tr>
+      <th></th> <!-- columna nueva para selección -->
+      <th>ID</th>
+      <th>Creado el</th>
+      <th>Creado por</th>
+      <th>Folio</th>
+      <th>Cliente</th>
+      <th>Desarrollo</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php foreach ($contratos as $ct) : ?>
+    <tr data-contrato-id="<?php echo (int)$ct['id']; ?>" data-estatus="<?php echo (int)$ct['estatus']; ?>">
+      <!-- Checkbox de selección -->
+      <td><input type="checkbox" class="select-contrato"></td>
+      <td><?php echo $ct['id']; ?></td>
+      <td><?php echo htmlspecialchars($ct['created_at']); ?></td>
+      <td><?php echo htmlspecialchars($ct['nombre_corto']); ?></td>
+      <td><?php echo htmlspecialchars($ct['folio'] ?? ''); ?></td>
+      <td><?php echo htmlspecialchars($ct['nombre_cliente']); ?></td>
+      <td><?php echo htmlspecialchars($ct['nombre_desarrollo']); ?></td>
+      <td>
+        <button type="button"
+                class="btn btn-success btn-sm btnGenerarContrato"
+                data-contrato-id="<?php echo $ct['id']; ?>"
+                title="Generar contrato">
+          <i class="fas fa-file-alt"></i>
+        </button>
+      </td>
+    </tr>
+    <?php endforeach; ?>
+  </tbody>
+</table>
+
+
         </div>
       </div>
     </div>

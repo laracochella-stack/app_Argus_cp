@@ -26,11 +26,12 @@ class ModeloUsuarios {
      */
     public static function mdlAgregarUsuario($datos) {
         $link = Conexion::conectar();
-        $sql = "INSERT INTO argus_users (username, password, permission) VALUES (:username, :password, :permission)";
+        $sql = "INSERT INTO argus_users (username, password, permission, nombre_corto) VALUES (:username, :password, :permission, :nombre_corto)";
         $stmt = $link->prepare($sql);
         $stmt->bindParam(':username', $datos['username'], PDO::PARAM_STR);
         $stmt->bindParam(':password', $datos['password'], PDO::PARAM_STR);
         $stmt->bindParam(':permission', $datos['permission'], PDO::PARAM_STR);
+        $stmt->bindParam(':nombre_corto', $datos['nombre_corto'], PDO::PARAM_STR);
         if ($stmt->execute()) {
             return 'ok';
         }
@@ -44,7 +45,7 @@ class ModeloUsuarios {
      */
     public static function mdlMostrarUsuarios() {
         $link = Conexion::conectar();
-        $stmt = $link->query("SELECT id, username, permission, created_at FROM argus_users ORDER BY id ASC");
+        $stmt = $link->query("SELECT id, nombre_corto , username, permission, created_at FROM argus_users ORDER BY id ASC");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

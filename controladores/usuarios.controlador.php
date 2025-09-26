@@ -26,6 +26,7 @@ class ControladorUsuarios {
                 $_SESSION['id'] = $respuesta['id'];
                 $_SESSION['username'] = $respuesta['username'];
                 $_SESSION['permission'] = $respuesta['permission'];
+                $_SESSION['nombre_corto'] = $respuesta['nombre_corto'];
                 // Mostrar alerta de éxito y redirigir
                 echo '<script>
                     Swal.fire({
@@ -62,6 +63,7 @@ class ControladorUsuarios {
             }
             // Obtener y validar campos
             $username    = trim($_POST['nuevoUsuario']);
+            $nombre_corto    = trim($_POST['nuevoNombre']);
             $password    = $_POST['nuevoPassword'] ?? '';
             $password2   = $_POST['repetirPassword'] ?? '';
             $permissionInput   = $_POST['nuevoRol'] ?? 'user';
@@ -78,7 +80,8 @@ class ControladorUsuarios {
             $datos = [
                 'username'   => $username,
                 'password'   => $hash,
-                'permission' => $permission
+                'permission' => $permission,
+                'nombre_corto' => $nombre_corto
             ];
             $resultado = ModeloUsuarios::mdlAgregarUsuario($datos);
             if ($resultado === 'ok') {
