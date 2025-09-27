@@ -1,3 +1,52 @@
+
+/* 🔽 Inputs, selects y textareas en tamaño sm */
+input.form-control,
+select.form-control {
+  height: calc(1.5em + 0.5rem + 2px); /* igual que .form-control-sm */
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+
+/* 🔽 También para spans de input-group */
+.input-group-text {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+}
+
+textarea.form-control {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  border-radius: 0.2rem;
+  min-height: calc(1.5em + 0.5rem + 2px); /* altura mínima como input sm */
+  height: auto; /* 👈 permite crecer según rows */
+}
+label.form-label {
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+
+
+/* 🔽 Ajuste global del tamaño de fuente en tablas */
+table {
+  font-size: 0.85rem; /* Ajusta el tamaño general */
+}
+
+table th,
+table td {
+  font-size: 0.85rem; /* Asegura que headers y filas tengan el mismo tamaño */
+  padding: 0.4rem 0.6rem; /* Opcional: reduce espaciado interno */
+}
+
+table thead th {
+  font-weight: 600; /* Mantén el header más claro pero compacto */
+}
+
 /* Estilos personalizados para Argus MVC */
 .info-box { cursor: pointer; }
 .info-box:hover { box-shadow: 0 0 5px rgba(0,0,0,0.2); }

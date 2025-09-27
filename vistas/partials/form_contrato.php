@@ -28,7 +28,7 @@
 <div class="col-md-12">
   <label class="form-label">Habitacional y colindancias</label>
   <!-- Campo de texto simple. Se almacenará en mayúsculas -->
-  <textarea class="form-control text-uppercase" name="habitacional" id="crearHabitacional" rows="4" oninput="this.value = this.value.toUpperCase();"></textarea>
+  <textarea class="form-control text-uppercase" name="habitacional" id="crearHabitacional" rows="6" oninput="this.value = this.value.toUpperCase();"></textarea>
 </div>
 
 <div class="col-md-6">
