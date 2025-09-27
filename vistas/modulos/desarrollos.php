@@ -237,15 +237,15 @@ if (class_exists('ControladorParametros')) {
             </div>
             <div class="col-12">
               <label class="form-label">Ubicación y descripción</label>
-              <textarea class="form-control" name="descripcion" rows="2" required></textarea>
+              <textarea class="form-control-plaintext" name="descripcion" rows="2" readonly></textarea>
             </div>
             <div class="col-md-6">
               <label class="form-label">Superficie</label>
-              <input type="text" class="form-control" name="superficie" required>
+              <input type="text" class="form-control number" name="superficie" required>
             </div>
             <div class="col-md-6">
               <label class="form-label">Clave catastral</label>
-              <input type="text" class="form-control" name="clave_catastral" required>
+              <input type="text" class="form-control-plaintext" name="clave_catastral" readonly>
             </div>
             <div class="col-md-6">
               <label class="form-label">Lotes disponibles</label>
@@ -261,14 +261,14 @@ if (class_exists('ControladorParametros')) {
               <!-- Agrupamos el campo con un prefijo para mostrar el símbolo de pesos -->
               <div class="input-group">
                 <span class="input-group-text">$</span>
-                <input type="text" class="form-control" name="precio_lote" id="crearPrecioLote" required>
+                <input type="text" class="form-control-plaintext" name="precio_lote" id="crearPrecioLote" readonly>
               </div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Precio total</label>
               <div class="input-group">
                 <span class="input-group-text">$</span>
-                <input type="text" class="form-control" name="precio_total" id="crearPrecioTotal" required>
+                <input type="text" class="form-control-plaintext" name="precio_total" id="crearPrecioTotal" readonly>
               </div>
             </div>
           </div>

@@ -469,29 +469,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    
+
     /*
      * Actualiza los campos derivados (saldo y penalización) en tiempo real
      * para el formulario de creación de contratos. Calcula saldo como
      * monto - enganche y penalización como 10% del monto. También
      * actualiza los campos ocultos con las cantidades en letras.
      
-    function actualizarCalculosContrato() {
-        const montoVal = parseFloat(montoInmueble && montoInmueble.value ? montoInmueble.value : 0) || 0;
-        const engancheVal = parseFloat(enganche && enganche.value ? enganche.value : 0) || 0;
-        const saldoVal = montoVal - engancheVal;
-        const penalVal = montoVal * 0.10;
-        if (saldoPago) {
-            saldoPago.value = saldoVal.toFixed(2);
-        }
-        if (penalizacion) {
-            penalizacion.value = penalVal.toFixed(2);
-        }
-        convertirNumeroALetras(montoVal, montoInmuebleFixed);
-        convertirNumeroALetras(engancheVal, engancheFixed);
-        convertirNumeroALetras(saldoVal, saldoPagoFixed);
-        convertirNumeroALetras(penalVal, penalizacionFixed);
-    }
     */
+    
+
     function actualizarCalculosContrato() {
         const montoVal = Math.round(parseFloat(montoInmueble && montoInmueble.value ? montoInmueble.value : 0) || 0);
         const engancheVal = Math.round(parseFloat(enganche && enganche.value ? enganche.value : 0) || 0);
@@ -509,237 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
         convertirNumeroALetras(engancheVal, engancheFixed);
         convertirNumeroALetras(saldoVal, saldoPagoFixed);
         convertirNumeroALetras(penalVal, penalizacionFixed);
-    }
-
-    if (montoInmueble) montoInmueble.addEventListener('input', actualizarCalculosContrato);
-    if (enganche) enganche.addEventListener('input', actualizarCalculosContrato);
-    // Campos para manejar fracciones como etiquetas en la creación de contratos
-    const inputFraccionContrato = document.getElementById('inputFraccionContrato');
-    const contenedorFraccionesContrato = document.getElementById('contenedorFraccionesContrato');
-    const hiddenFraccionesContrato = document.getElementById('hiddenFraccionesContrato');
-    // Arrays para almacenar las fracciones seleccionadas y las disponibles
-    let fraccionesContrato = [];
-    let fraccionesDisponibles = [];
-    // Contenedor que mostrará las fracciones disponibles del desarrollo en la creación de contratos
-    const listaFraccionesDisponiblesContrato = document.getElementById('listaFraccionesDisponiblesContrato');
-    if (btnsCrearContrato && formCrearContrato) {
-        btnsCrearContrato.forEach(btn => {
-            btn.addEventListener('click', function () {
-                const clienteId = this.getAttribute('data-cliente-id');
-                document.getElementById('crearContratoClienteId').value = clienteId;
-                // Resetear select y campos
-                if (selectDesarrolloContrato) {
-                    selectDesarrolloContrato.value = '';
-                }
-                if (contratoSuperficie) contratoSuperficie.value = '';
-                // Reiniciar los campos de tipo de contrato
-                if (contratoTipoId) contratoTipoId.value = '';
-                if (contratoTipoNombre) contratoTipoNombre.value = '';
-                // Reiniciar fracciones seleccionadas y su representación
-                fraccionesContrato = [];
-                if (contenedorFraccionesContrato) {
-                    contenedorFraccionesContrato.innerHTML = '';
-                }
-                if (hiddenFraccionesContrato) {
-                    hiddenFraccionesContrato.value = '';
-                }
-                // Reiniciar disponibilidad
-                fraccionesDisponibles = [];
-                // Limpiar la lista visual de fracciones disponibles
-                if (listaFraccionesDisponiblesContrato) {
-                    listaFraccionesDisponiblesContrato.innerHTML = '';
-                }
-                // Limpiar campos financieros para creación de contrato
-                if (montoInmueble) montoInmueble.value = '';
-                if (montoInmuebleFixed) montoInmuebleFixed.value = '';
-                if (enganche) enganche.value = '';
-                if (engancheFixed) engancheFixed.value = '';
-                if (saldoPago) saldoPago.value = '';
-                if (saldoPagoFixed) saldoPagoFixed.value = '';
-                if (penalizacion) penalizacion.value = '';
-                if (penalizacionFixed) penalizacionFixed.value = '';
-                const parcial = document.getElementById('parcialidadesAnuales');
-                if (parcial) parcial.value = '';
-                const dia = document.getElementById('diaPago');
-                if (dia) dia.value = '';
-                const rango = document.getElementById('rangoCompromisoPago');
-                if (rango) rango.value = '';
-                const vigencia = document.getElementById('vigenciaPagare');
-                if (vigencia) vigencia.value = '';
-            });
-        });
-        // Al cambiar de desarrollo llenar superficie y tipo
-        if (selectDesarrolloContrato) {
-        selectDesarrolloContrato.addEventListener('change', function () {
-                const selected = this.options[this.selectedIndex];
-                const sup = selected.getAttribute('data-superficie');
-                const tipoId = selected.getAttribute('data-tipo-id');
-                const tipoNombre = selected.getAttribute('data-tipo-nombre');
-                const lotes = selected.getAttribute('data-lotes');
-                // Asignar superficie y tipo de contrato (identificador y nombre)
-                if (contratoSuperficie) contratoSuperficie.value = sup || '';
-                if (contratoTipoId) contratoTipoId.value = tipoId || '';
-                if (contratoTipoNombre) contratoTipoNombre.value = tipoNombre || '';
-                // Decodificar lotes disponibles para fracciones
-                fraccionesDisponibles = [];
-                if (lotes) {
-                    const decoded = decodeHtml(lotes);
-                    try {
-                        const parsed = JSON.parse(decoded);
-                        if (Array.isArray(parsed)) {
-                            fraccionesDisponibles = parsed;
-                        }
-                    } catch (err) {
-                        // Si falla JSON parse, asumir lista separada por comas
-                        fraccionesDisponibles = decoded.split(',').map(l => l.trim()).filter(Boolean);
-                    }
-                }
-                // Al cambiar el desarrollo reiniciamos las fracciones seleccionadas
-                fraccionesContrato = [];
-                if (contenedorFraccionesContrato) {
-                    contenedorFraccionesContrato.innerHTML = '';
-                }
-                if (hiddenFraccionesContrato) {
-                    hiddenFraccionesContrato.value = '';
-                }
-                // Renderizar la lista de opciones disponibles
-                if (typeof renderListaDisponiblesContrato === 'function') {
-                    renderListaDisponiblesContrato();
-                }
-            });
-        }
-        formCrearContrato.addEventListener('submit', function (e) {
-            e.preventDefault();
-            const formData = new FormData(formCrearContrato);
-            const url = formCrearContrato.getAttribute('action');
-            fetch(url, {
-                method: 'POST',
-                body: formData
-            }).then(r => r.text()).then(resp => {
-                let title = 'Guardado';
-                let text = 'Contrato creado correctamente.';
-                let icon = 'success';
-                if (resp.includes('error')) {
-                    title = 'Error';
-                    if (resp.includes('ya-existe')) {
-                        text = 'El cliente ya cuenta con un contrato.';
-                    } else if (resp.includes('token')) {
-                        text = 'Token CSRF inválido.';
-                    } else if (resp.includes('sesion')) {
-                        text = 'Sesión no válida.';
-                    } else {
-                        text = 'No se pudo crear.';
-                    }
-                    icon = 'error';
-                }
-                Swal.fire(title, text, icon).then(() => {
-                    window.location.reload();
-                });
-            }).catch(() => {
-                Swal.fire('Error', 'No se pudo crear.', 'error');
-            });
-        });
-        // Configurar manejo de fracciones como etiquetas para creación
-        if (inputFraccionContrato && contenedorFraccionesContrato && hiddenFraccionesContrato) {
-            // Función para mostrar etiquetas y actualizar campo oculto
-            const renderFraccionesContrato = () => {
-                contenedorFraccionesContrato.innerHTML = '';
-                fraccionesContrato.forEach((frac, idx) => {
-                    const badge = document.createElement('span');
-                    badge.style.display = 'inline-flex';
-                    badge.style.alignItems = 'center';
-                    badge.style.borderRadius = '12px';
-                    badge.style.backgroundColor = '#f0f2f5';
-                    badge.style.color = '#333';
-                    badge.style.padding = '4px 8px';
-                    badge.style.margin = '2px';
-                    badge.style.fontSize = '0.8rem';
-                    badge.textContent = frac;
-                    const removeSpan = document.createElement('span');
-                    removeSpan.style.marginLeft = '6px';
-                    removeSpan.style.color = '#dc3545';
-                    removeSpan.style.cursor = 'pointer';
-                    removeSpan.textContent = '×';
-                    removeSpan.addEventListener('click', () => {
-                        fraccionesContrato.splice(idx, 1);
-                        renderFraccionesContrato();
-                    });
-                        badge.appendChild(removeSpan);
-                    contenedorFraccionesContrato.appendChild(badge);
-                });
-                hiddenFraccionesContrato.value = fraccionesContrato.join(',');
-                // Actualizar la lista de fracciones disponibles para reflejar las seleccionadas
-                if (typeof renderListaDisponiblesContrato === 'function') {
-                    renderListaDisponiblesContrato();
-                }
-            };
-            inputFraccionContrato.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const valor = this.value.trim();
-                    if (valor && !fraccionesContrato.includes(valor)) {
-                        // Si hay fracciones disponibles, verificar que el valor esté permitido
-                        if (fraccionesDisponibles.length === 0 || fraccionesDisponibles.includes(valor)) {
-                            fraccionesContrato.push(valor);
-                            renderFraccionesContrato();
-                        }
-                    }
-                    this.value = '';
-                }
-            });
-
-            // Función para renderizar la lista de fracciones disponibles como botones clicables.
-            function renderListaDisponiblesContrato() {
-                if (!listaFraccionesDisponiblesContrato) return;
-                listaFraccionesDisponiblesContrato.innerHTML = '';
-                if (Array.isArray(fraccionesDisponibles) && fraccionesDisponibles.length > 0) {
-                    fraccionesDisponibles.forEach(frac => {
-                        // Mostrar sólo las fracciones que aún no han sido seleccionadas
-                        if (!fraccionesContrato.includes(frac)) {
-                            const item = document.createElement('span');
-                            item.style.display = 'inline-block';
-                            item.style.margin = '2px';
-                            item.style.padding = '4px 8px';
-                            item.style.borderRadius = '12px';
-                            item.style.backgroundColor = '#e2e6ea';
-                            item.style.color = '#333';
-                            item.style.cursor = 'pointer';
-                            item.style.fontSize = '0.8rem';
-                            item.textContent = frac;
-                            item.addEventListener('click', () => {
-                                if (!fraccionesContrato.includes(frac)) {
-                                    fraccionesContrato.push(frac);
-                                    renderFraccionesContrato();
-                                }
-                            });
-                            listaFraccionesDisponiblesContrato.appendChild(item);
-                        }
-                    });
-                }
-            }
-        }
-    }
-
-    // Ver contrato
-    const btnsVerContrato = document.querySelectorAll('.btnVerContrato');
-    const modalVerContrato = document.getElementById('modalVerContrato');
-    if (btnsVerContrato && modalVerContrato) {
-        btnsVerContrato.forEach(btn => {
-            btn.addEventListener('click', function () {
-                // Llenar campos con los atributos de datos
-                document.getElementById('verContratoDesarrollo').value = this.getAttribute('data-nombre-desarrollo');
-                document.getElementById('verContratoMensualidades').value = this.getAttribute('data-mensualidades');
-                document.getElementById('verContratoSuperficie').value = this.getAttribute('data-superficie');
-                document.getElementById('verContratoFraccion').value = this.getAttribute('data-fraccion');
-                document.getElementById('verContratoEntrega').value = this.getAttribute('data-entrega');
-                document.getElementById('verContratoFirma').value = this.getAttribute('data-firma');
-                document.getElementById('verContratoHabitacional').value = this.getAttribute('data-habitacional');
-                document.getElementById('verContratoInicio').value = this.getAttribute('data-inicio');
-                // Mostrar nombre del tipo de contrato en vista del contrato
-                document.getElementById('verContratoTipo').value = this.getAttribute('data-tipo-nombre');
-            });
-        });
-    }
+    }   
 
     /*
      * Inicializar DataTables en las listas para paginar y buscar dinámicamente.
@@ -811,39 +569,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Inicializar tabla de contratos con DataTables
+        // DataTable: contratos + toggle archivados (único bloque)
+        if (typeof $ !== 'undefined') {
         const $tablaContratos = $('#tablaContratos');
         if ($tablaContratos.length) {
-            const dataTableContratos = $tablaContratos.DataTable({
-                pageLength: 20,
-                language: esLang,
-                responsive: true,
-                order: [[1, 'desc']]
+            const dt = $tablaContratos.DataTable({
+            pageLength: 20,
+            language: esLang,
+            responsive: true,
+            order: [[1, 'desc']]
             });
 
-            // 👇 Aquí añadimos el filtro por estatus
-            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-                const row = dataTableContratos.row(dataIndex).node();
-                const estatus = row.getAttribute("data-estatus");
-                const mostrarArchivados = document.getElementById('toggleArchivados').checked;
-
-                if (mostrarArchivados) {
-                    return estatus === "0"; // mostrar solo archivados
-                } else {
-                    return estatus === "1"; // mostrar solo activos
-                }
-            });
-
-            // Redibujar tabla al cargar
-            dataTableContratos.draw();
-
-            // Redibujar cuando cambie el toggle
             const toggleArchivados = document.getElementById('toggleArchivados');
+
+            // Filtro global limitado a ESTA tabla
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            if (settings.nTable !== $tablaContratos[0]) return true;
+            const row = dt.row(dataIndex).node();
+            const estatus = row ? row.getAttribute('data-estatus') : null;
+            if (!estatus) return true;
+            const mostrarArchivados = !!(toggleArchivados && toggleArchivados.checked);
+            return mostrarArchivados ? (estatus === '0') : (estatus === '1');
+            });
+
+            dt.draw();
             if (toggleArchivados) {
-                toggleArchivados.addEventListener('change', function () {
-                    dataTableContratos.draw();
-                });
+            toggleArchivados.addEventListener('change', () => dt.draw());
             }
         }
+        }
+
 
 
     }
@@ -1047,372 +802,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+    
 
-    /*
-     * Gestión de contratos: edición
-     */
-    const btnsEditarContrato = document.querySelectorAll('.btnEditarContrato');
-    const modalEditarContrato = document.getElementById('modalEditarContrato');
-    const formEditarContrato = document.getElementById('formEditarContrato');
-    if (btnsEditarContrato && modalEditarContrato && formEditarContrato) {
-        // Elementos para manejo de fracciones en edición
-        const inputFraccionEditar = document.getElementById('inputFraccionEditar');
-        const contenedorFraccionesEditar = document.getElementById('contenedorFraccionesEditar');
-        const hiddenFraccionesEditar = document.getElementById('hiddenFraccionesEditar');
-        // Contenedor de fracciones disponibles para el desarrollo seleccionado en edición
-        const listaFraccionesDisponiblesEditar = document.getElementById('listaFraccionesDisponiblesEditar');
-        // Arreglo para almacenar las fracciones seleccionadas actualmente
-        let fraccionesEditar = [];
-        // Arreglo para almacenar todas las fracciones disponibles del desarrollo
-        let fraccionesDisponiblesEditar = [];
 
-        // === Campos financieros para edición de contrato ===
-        const editarMontoInmueble = document.getElementById('editarMontoInmueble');
-        const editarMontoInmuebleFixed = document.getElementById('editarMontoInmuebleFixed');
-        const editarEnganche = document.getElementById('editarEnganche');
-        const editarEngancheFixed = document.getElementById('editarEngancheFixed');
-        const editarSaldoPago = document.getElementById('editarSaldoPago');
-        const editarSaldoPagoFixed = document.getElementById('editarSaldoPagoFixed');
-        const editarPenalizacion = document.getElementById('editarPenalizacion');
-        const editarPenalizacionFixed = document.getElementById('editarPenalizacionFixed');
-        const editarParcialidades = document.getElementById('editarParcialidadesAnuales');
-        const editarVigenciaPagare = document.getElementById('editarVigenciaPagare');
-        // Nuevo campo de folio y rango de pago en edición
-        const editarContratoFolio   = document.getElementById('editarContratoFolio');
-        const editarRangoPagoInicio = document.getElementById('editarRangoPagoInicio');
-        const editarRangoPagoFin    = document.getElementById('editarRangoPagoFin');
-
-        /*
-         * Actualiza saldo y penalización en tiempo real para la edición de contratos.
-         */
-        function actualizarCalculosEditar() {
-            const montoVal = parseFloat(editarMontoInmueble && editarMontoInmueble.value ? editarMontoInmueble.value : 0) || 0;
-            const engancheVal = parseFloat(editarEnganche && editarEnganche.value ? editarEnganche.value : 0) || 0;
-            const saldoVal = montoVal - engancheVal;
-            const penalVal = montoVal * 0.10;
-            if (editarSaldoPago) {
-                editarSaldoPago.value = saldoVal.toFixed(2);
-            }
-            if (editarPenalizacion) {
-                editarPenalizacion.value = penalVal.toFixed(2);
-            }
-            // Actualizar campos en letras
-            convertirNumeroALetras(montoVal, editarMontoInmuebleFixed);
-            convertirNumeroALetras(engancheVal, editarEngancheFixed);
-            convertirNumeroALetras(saldoVal, editarSaldoPagoFixed);
-            convertirNumeroALetras(penalVal, editarPenalizacionFixed);
-
-            // Actualizar pago mensual en letras si existe el campo
-            const editarPagoMensual = document.getElementById('editarPagoMensual');
-            const editarPagoMensualFixed = document.getElementById('editarPagoMensualFixed');
-            if (editarPagoMensual && editarPagoMensualFixed) {
-                const pmVal = parseFloat(editarPagoMensual.value || '0');
-                convertirNumeroALetras(pmVal, editarPagoMensualFixed);
-            }
-        }
-        if (editarMontoInmueble) editarMontoInmueble.addEventListener('input', actualizarCalculosEditar);
-        if (editarEnganche) editarEnganche.addEventListener('input', actualizarCalculosEditar);
-
-        // Convertir pago mensual a letras en edición
-        const campoPagoMensualEditar = document.getElementById('editarPagoMensual');
-        const campoPagoMensualEditarFixed = document.getElementById('editarPagoMensualFixed');
-        if (campoPagoMensualEditar && campoPagoMensualEditarFixed) {
-            campoPagoMensualEditar.addEventListener('input', () => {
-                const pmVal = parseFloat(campoPagoMensualEditar.value || '0');
-                convertirNumeroALetras(pmVal, campoPagoMensualEditarFixed);
-            });
-        }
-
-        // Actualizar superficie convertida a letras en edición cuando cambia el valor
-        const editarSuperficieInput = document.getElementById('editarContratoSuperficie');
-        const editarSuperficieHidden = document.getElementById('editarSuperficieFixed');
-        if (editarSuperficieInput && editarSuperficieHidden) {
-            const actualizarSuperficieLetras = () => {
-                const val = parseFloat(editarSuperficieInput.value || '0');
-                const entero = Math.floor(val);
-                convertirNumeroALetras(entero, editarSuperficieHidden);
-            };
-            editarSuperficieInput.addEventListener('input', actualizarSuperficieLetras);
-        }
-        // Función para renderizar las etiquetas de fracciones en edición
-        const renderFraccionesEditar = () => {
-            if (!contenedorFraccionesEditar) return;
-            contenedorFraccionesEditar.innerHTML = '';
-            fraccionesEditar.forEach((frac, idx) => {
-                const badge = document.createElement('span');
-                badge.style.display = 'inline-flex';
-                badge.style.alignItems = 'center';
-                badge.style.borderRadius = '12px';
-                badge.style.backgroundColor = '#f0f2f5';
-                badge.style.color = '#333';
-                badge.style.padding = '4px 8px';
-                badge.style.margin = '2px';
-                badge.style.fontSize = '0.8rem';
-                badge.textContent = frac;
-                const removeSpan = document.createElement('span');
-                removeSpan.style.marginLeft = '6px';
-                removeSpan.style.color = '#dc3545';
-                removeSpan.style.cursor = 'pointer';
-                removeSpan.textContent = '×';
-                removeSpan.addEventListener('click', () => {
-                    fraccionesEditar.splice(idx, 1);
-                    renderFraccionesEditar();
-                });
-                badge.appendChild(removeSpan);
-                contenedorFraccionesEditar.appendChild(badge);
-            });
-            if (hiddenFraccionesEditar) {
-                hiddenFraccionesEditar.value = fraccionesEditar.join(',');
-            }
-            // Después de renderizar etiquetas, actualizar la lista de disponibles
-            if (typeof renderListaDisponiblesEditar === 'function') {
-                renderListaDisponiblesEditar();
-            }
-        };
-
-        // Función para renderizar la lista de fracciones disponibles en edición
-        function renderListaDisponiblesEditar() {
-            if (!listaFraccionesDisponiblesEditar) return;
-            listaFraccionesDisponiblesEditar.innerHTML = '';
-            if (Array.isArray(fraccionesDisponiblesEditar) && fraccionesDisponiblesEditar.length > 0) {
-                fraccionesDisponiblesEditar.forEach(frac => {
-                    if (!fraccionesEditar.includes(frac)) {
-                        const item = document.createElement('span');
-                        item.style.display = 'inline-block';
-                        item.style.margin = '2px';
-                        item.style.padding = '4px 8px';
-                        item.style.borderRadius = '12px';
-                        item.style.backgroundColor = '#e2e6ea';
-                        item.style.color = '#333';
-                        item.style.cursor = 'pointer';
-                        item.style.fontSize = '0.8rem';
-                        item.textContent = frac;
-                        item.addEventListener('click', () => {
-                            if (!fraccionesEditar.includes(frac)) {
-                                fraccionesEditar.push(frac);
-                                renderFraccionesEditar();
-                            }
-                        });
-                        listaFraccionesDisponiblesEditar.appendChild(item);
-                    }
-                });
-            }
-        }
-        // Configurar ingreso de fracciones al presionar Enter
-        if (inputFraccionEditar) {
-            inputFraccionEditar.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const valor = this.value.trim();
-                    if (valor && !fraccionesEditar.includes(valor)) {
-                        // Si existen fracciones disponibles, sólo permitir las que están en la lista
-                        if (fraccionesDisponiblesEditar.length === 0 || fraccionesDisponiblesEditar.includes(valor)) {
-                            fraccionesEditar.push(valor);
-                            renderFraccionesEditar();
-                        }
-                    }
-                    this.value = '';
-                }
-            });
-        }
-        btnsEditarContrato.forEach(btn => {
-            btn.addEventListener('click', function () {
-                const id = this.getAttribute('data-contrato-id');
-                document.getElementById('editarContratoId').value = id;
-                document.getElementById('editarContratoMensualidades').value = this.getAttribute('data-mensualidades') || '';
-                document.getElementById('editarContratoSuperficie').value = this.getAttribute('data-superficie') || '';
-                // Asignar superficie convertida a letras si existe
-                const supFixedVal = this.getAttribute('data-superficie-fixed') || '';
-                const editarSupFixed = document.getElementById('editarSuperficieFixed');
-                if (editarSupFixed) {
-                    editarSupFixed.value = supFixedVal;
-                }
-                // Cargar fracciones existentes
-                const fracString = this.getAttribute('data-fraccion') || '';
-                fraccionesEditar = [];
-                if (fracString) {
-                    fracString.split(',').forEach(item => {
-                        const trimmed = item.trim();
-                        if (trimmed && !fraccionesEditar.includes(trimmed)) {
-                            fraccionesEditar.push(trimmed);
-                        }
-                    });
-                }
-                // Decodificar fracciones disponibles desde el atributo data-lotes
-                fraccionesDisponiblesEditar = [];
-                const lotesAttr = this.getAttribute('data-lotes') || '';
-                if (lotesAttr) {
-                    const decoded = decodeHtml(lotesAttr);
-                    try {
-                        const parsed = JSON.parse(decoded);
-                        if (Array.isArray(parsed)) {
-                            fraccionesDisponiblesEditar = parsed;
-                        }
-                    } catch (err) {
-                        fraccionesDisponiblesEditar = decoded.split(',').map(l => l.trim()).filter(Boolean);
-                    }
-                }
-                renderFraccionesEditar();
-                document.getElementById('editarContratoEntrega').value = this.getAttribute('data-entrega') || '';
-                document.getElementById('editarContratoFirma').value = this.getAttribute('data-firma') || '';
-                // Habitacional: cargar el contenido en el textarea simple
-                const habContent = this.getAttribute('data-habitacional') || '';
-                const habitacionalTextarea = document.getElementById('editarHabitacional');
-                if (habitacionalTextarea) {
-                    habitacionalTextarea.value = habContent.toUpperCase();
-                }
-                document.getElementById('editarContratoInicio').value = this.getAttribute('data-inicio') || '';
-                // Asignar identificador y nombre del tipo de contrato en edición
-                const tipoId = this.getAttribute('data-tipo-id') || '';
-                const tipoNombre = this.getAttribute('data-tipo-nombre') || '';
-                const inputTipoId = document.getElementById('editarContratoTipoId');
-                const inputTipoNombre = document.getElementById('editarContratoTipoNombre');
-                if (inputTipoId) inputTipoId.value = tipoId;
-                if (inputTipoNombre) inputTipoNombre.value = tipoNombre;
-
-                // Rellenar campos financieros desde los atributos de datos
-                if (editarMontoInmueble) {
-                    editarMontoInmueble.value = this.getAttribute('data-monto') || '';
-                }
-                if (editarMontoInmuebleFixed) {
-                    editarMontoInmuebleFixed.value = this.getAttribute('data-monto-fixed') || '';
-                }
-                if (editarEnganche) {
-                    editarEnganche.value = this.getAttribute('data-enganche') || '';
-                }
-                if (editarEngancheFixed) {
-                    editarEngancheFixed.value = this.getAttribute('data-enganche-fixed') || '';
-                }
-                if (editarSaldoPago) {
-                    editarSaldoPago.value = this.getAttribute('data-saldo') || '';
-                }
-                if (editarSaldoPagoFixed) {
-                    editarSaldoPagoFixed.value = this.getAttribute('data-saldo-fixed') || '';
-                }
-                if (editarParcialidades) {
-                    editarParcialidades.value = this.getAttribute('data-parcialidades') || '';
-                }
-                // Asignar pago mensual y su versión fija
-                const pagoMensualVal = this.getAttribute('data-pago-mensual') || '';
-                const pagoMensualFixedVal = this.getAttribute('data-pago-mensual-fixed') || '';
-                const editarPagoMensual = document.getElementById('editarPagoMensual');
-                const editarPagoMensualFixed = document.getElementById('editarPagoMensualFixed');
-                if (editarPagoMensual) editarPagoMensual.value = pagoMensualVal;
-                if (editarPagoMensualFixed) editarPagoMensualFixed.value = pagoMensualFixedVal;
-                // Convertir a letras después de asignar
-                if (editarPagoMensual && editarPagoMensualFixed) {
-                    const pmNum = parseFloat(pagoMensualVal || '0');
-                    convertirNumeroALetras(pmNum, editarPagoMensualFixed);
-                }
-                if (editarPenalizacion) {
-                    editarPenalizacion.value = this.getAttribute('data-penalizacion') || '';
-                }
-                if (editarPenalizacionFixed) {
-                    editarPenalizacionFixed.value = this.getAttribute('data-penalizacion-fixed') || '';
-                }
-                if (editarVigenciaPagare) {
-                    editarVigenciaPagare.value = this.getAttribute('data-vigencia-pagare') || '';
-                }
-                // Asignar fecha del contrato (convertir de formato largo a YYYY-MM-DD) y su campo fijo
-                const fechaContratoStr = this.getAttribute('data-fecha-contrato') || '';
-                const fechaContratoFixedStr = this.getAttribute('data-fecha-contrato-fixed') || '';
-                if (fechaContratoStr) {
-                    // Parsear "DD de Mes de YYYY" a YYYY-MM-DD
-                    const mapMes = {
-                        'enero': '01','febrero': '02','marzo': '03','abril': '04','mayo': '05','junio': '06',
-                        'julio': '07','agosto': '08','septiembre': '09','octubre': '10','noviembre': '11','diciembre': '12'
-                    };
-                    const parts = fechaContratoStr.trim().toLowerCase().split(' de ');
-                    if (parts.length === 3) {
-                        const dia = parts[0].padStart(2, '0');
-                        const mesTxt = parts[1];
-                        const anio = parts[2];
-                        const mesNum = mapMes[mesTxt] || '01';
-                        const fechaISO = `${anio}-${mesNum}-${dia}`;
-                        const fcInput = document.getElementById('editarFechaContrato');
-                        if (fcInput) fcInput.value = fechaISO;
-                    }
-                }
-                // Asignar valor fijo
-                const fcFixedInput = document.getElementById('editarFechaContratoFixed');
-                if (fcFixedInput) fcFixedInput.value = fechaContratoFixedStr;
-                // Asignar folio
-                if (editarContratoFolio) {
-                    editarContratoFolio.value = this.getAttribute('data-folio') || '';
-                }
-                // Asignar rango de pago (inicio y fin) parseando la cadena "DD de Mes de YYYY a DD de Mes de YYYY"
-                const rangoPagoStr = this.getAttribute('data-rango-pago') || '';
-                if (rangoPagoStr && (editarRangoPagoInicio || editarRangoPagoFin)) {
-                    // Función de ayuda para convertir una fecha larga a YYYY-MM-DD
-                    const mesesMap = {
-                        'enero': '01',
-                        'febrero': '02',
-                        'marzo': '03',
-                        'abril': '04',
-                        'mayo': '05',
-                        'junio': '06',
-                        'julio': '07',
-                        'agosto': '08',
-                        'septiembre': '09',
-                        'octubre': '10',
-                        'noviembre': '11',
-                        'diciembre': '12'
-                    };
-                    const partes = rangoPagoStr.split(' a ');
-                    const parseFecha = (f) => {
-                        const arr = f.trim().toLowerCase().split(' de ');
-                        if (arr.length === 3) {
-                            const dia = arr[0].padStart(2, '0');
-                            const mesTxt = arr[1];
-                            const anio = arr[2];
-                            const mesNum = mesesMap[mesTxt] || '01';
-                            return `${anio}-${mesNum}-${dia}`;
-                        }
-                        return '';
-                    };
-                    const inicio = parseFecha(partes[0]);
-                    const fin = partes.length > 1 ? parseFecha(partes[1]) : '';
-                    if (editarRangoPagoInicio) editarRangoPagoInicio.value = inicio;
-                    if (editarRangoPagoFin) editarRangoPagoFin.value = fin;
-                }
-                // Después de asignar valores, actualizar cálculos por si hiciera falta
-                actualizarCalculosEditar();
-            });
-        });
-        formEditarContrato.addEventListener('submit', function (e) {
-            e.preventDefault();
-            Swal.fire({
-                title: '¿Estás seguro de modificar los datos?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, modificar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const formData = new FormData(formEditarContrato);
-                    const url = formEditarContrato.getAttribute('action');
-                    fetch(url, {
-                        method: 'POST',
-                        body: formData
-                    }).then(r => r.text()).then(resp => {
-                        let title = 'Guardado';
-                        let text = 'Contrato actualizado correctamente.';
-                        let icon = 'success';
-                        if (resp.includes('error')) {
-                            title = 'Error';
-                            text = 'No se pudo actualizar.';
-                            icon = 'error';
-                        }
-                        Swal.fire(title, text, icon).then(() => {
-                            window.location.reload();
-                        });
-                    }).catch(() => {
-                        Swal.fire('Error', 'No se pudo actualizar.', 'error');
-                    });
-                }
-            });
-        });
-    }
 
     /*
      * Generación de contratos: manejar clic en botón
@@ -1469,6 +861,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    
+    
     /*
      * === Gestión de formulario Crear Contrato (página completa) ===
      * Este bloque se activa en la página crearContrato.php. Maneja la selección del desarrollo,
@@ -1635,6 +1029,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
+    
+    
     /*
      * CONFIRMACIÓN DE ENVÍO PARA CREAR CONTRATO
      * Antes de enviar el formulario completo de contrato, se mostrará una
@@ -1673,6 +1069,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                     return; // 🚫 Detenemos aquí si no es válido
                 }
+                // Bloque dentro del submit del formCrear, ANTES del Swal de confirmación:
+                    const fNac = document.getElementById('clienteFechaNacimiento');
+                    if (fNac && fNac.value) {
+                    const fn  = new Date(fNac.value);
+                    const hoy = new Date();
+                    let edad  = hoy.getFullYear() - fn.getFullYear();
+                    const m   = hoy.getMonth() - fn.getMonth();
+                    if (m < 0 || (m === 0 && hoy.getDate() < fn.getDate())) edad--;
+                    if (edad < 18) {
+                        Swal.fire('Edad no válida', 'El cliente debe ser mayor de 18 años.', 'error');
+                        return;
+                    }
+                    }
+
 
                 // ✅ Si todo es válido → confirmación
                 Swal.fire({
@@ -1723,12 +1133,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     })();
-  
-
-
-
-   
-
 
     
 
@@ -1781,51 +1185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
-    /*
-     * INICIALIZAR EL EDITOR WYSIWYG (SUMMERNOTE) PARA HABITACIONAL Y COLINDANCIAS
-     * Se utiliza Summernote para proporcionar un editor de texto enriquecido en
-     * los campos habitacional. El contenido HTML se actualiza en un campo
-     * oculto antes de enviar el formulario.
-     
-    (function inicializarHabitacionalEditor() {
-        // Crear
-        const editorCrear  = document.getElementById('crearHabitacionalEditor');
-        const hiddenCrear  = document.getElementById('crearHabitacionalHtml');
-        if (editorCrear && hiddenCrear && typeof $ !== 'undefined' && $(editorCrear).summernote) {
-            $(editorCrear).summernote({
-                placeholder: 'Describe las colindancias y uso habitacional...',
-                tabsize: 2,
-                height: 120
-            });
-            // Al enviar el formulario, copiar el contenido del editor al campo oculto
-            const formCrear = document.getElementById('formCrearContratoCompleto');
-            if (formCrear) {
-                formCrear.addEventListener('submit', () => {
-                    const html = $(editorCrear).summernote('code');
-                    hiddenCrear.value = html;
-                });
-            }
-        }
-        // Editar
-        const editorEditar = document.getElementById('editarHabitacionalEditor');
-        const hiddenEditar = document.getElementById('editarHabitacionalHtml');
-        if (editorEditar && hiddenEditar && typeof $ !== 'undefined' && $(editorEditar).summernote) {
-            $(editorEditar).summernote({
-                placeholder: 'Describe las colindancias y uso habitacional...',
-                tabsize: 2,
-                height: 120
-            });
-            const formEditar = document.getElementById('formEditarContrato');
-            if (formEditar) {
-                formEditar.addEventListener('submit', () => {
-                    const html = $(editorEditar).summernote('code');
-                    hiddenEditar.value = html;
-                });
-            }
-        }
-    })();
-    */
-
+  
     /*
      * ACTUALIZAR FECHA DE CONTRATO FIJA
      * Convierte una fecha seleccionada en el formato YYYY-MM-DD al formato
@@ -1880,6 +1240,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
+    
+
     // === Teléfono con intl-tel-input ===
     (function initTelefonoCliente() {
         const form = document.getElementById("formCrearContratoCompleto");
@@ -1929,11 +1291,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })();
 
+    
 
         // tooltip y sincronización de mensualidades y rango de pago
 
 
-        (function () {
+    (function () {
         const inputMeses = document.querySelector('input[name="mensualidades"]');
         const inputAnios = document.getElementById('crearRangoPago');
 
@@ -2017,8 +1380,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return texto.trim();
             }
         }
-        })();
+    })();
 
+    
         // === Calcular meses automáticamente según rango de fechas ===
         (function () {
             const inicioInput = document.getElementById('rangoPagoInicio');
@@ -2068,6 +1432,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })();
 
+
+        
         // === Acciones masivas en contratos (cancelar, reactivar, editar) ===
         /*
          * En la vista de contratos, permite seleccionar múltiples contratos y
@@ -2076,13 +1442,16 @@ document.addEventListener('DOMContentLoaded', () => {
          * seleccionados.
          */
         
+           // === Gestión de archivado / desarchivado en tablaContratos ===
+        (() => {
             const tabla = document.getElementById("tablaContratos");
             const acciones = document.getElementById("accionesContrato");
             const contBotones = document.getElementById("contenedorBotones");
             const selCount = document.getElementById("selCount");
-            const formAccion = document.getElementById("formContratosAccion"); // 👉 pequeño form oculto
+            const formAccion = document.getElementById("formContratosAccion"); // form oculto con action a contratos.controlador.php
 
-            if (!tabla) return;
+            if (!tabla || !acciones || !contBotones || !selCount || !formAccion) return; 
+            // 🚨 Si alguno no existe, salimos y no rompemos el resto del JS
 
             const seleccionados = new Set();
             let estatusSeleccion = null;
@@ -2090,12 +1459,14 @@ document.addEventListener('DOMContentLoaded', () => {
             function renderAcciones() {
                 const count = seleccionados.size;
                 selCount.textContent = count;
+
                 if (count === 0) {
                 acciones.style.display = "none";
                 contBotones.innerHTML = "";
                 estatusSeleccion = null;
                 return;
                 }
+
                 acciones.style.display = "block";
 
                 if (estatusSeleccion === 1) {
@@ -2111,8 +1482,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            // Selección de filas
             tabla.addEventListener("change", function (e) {
                 if (!e.target.classList.contains("select-contrato")) return;
+
                 const fila = e.target.closest("tr");
                 const id = fila.dataset.contratoId;
                 const estatus = parseInt(fila.dataset.estatus || "0", 10);
@@ -2124,9 +1497,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     if (estatus !== estatusSeleccion) {
                     e.target.checked = false;
-                    Swal.fire("Selección inválida",
+                    Swal.fire(
+                        "Selección inválida",
                         "Solo puedes seleccionar filas con el mismo estatus.",
-                        "warning");
+                        "warning"
+                    );
                     return;
                     }
                     seleccionados.add(id);
@@ -2138,6 +1513,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderAcciones();
             });
 
+            // Acciones (archivar/desarchivar)
             document.addEventListener("click", function (e) {
                 const btn = e.target.closest("#btnArchivar, #btnDesarchivar");
                 if (!btn) return;
@@ -2155,7 +1531,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }).then((result) => {
                 if (!result.isConfirmed) return;
 
-                // 👉 Reutilizamos la misma estructura que crearContrato
+                // Preparamos el formData
                 const formData = new FormData(formAccion);
                 formData.append("actualizarEstatusMasivo", "1");
                 formData.append("ids", ids.join(","));
@@ -2166,42 +1542,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(url, {
                     method: "POST",
                     body: formData
-                }).then(r => r.text()).then(resp => {
+                })
+                    .then(r => r.text())
+                    .then(resp => {
                     let title, text, icon;
                     if (resp.includes("ok")) {
-                    title = "Hecho";
-                    text = `Contratos ${accionTexto.toLowerCase()}dos correctamente.`;
-                    icon = "success";
-                    window.location.reload();
+                        title = "Hecho";
+                        text = `Contratos ${accionTexto.toLowerCase()}dos correctamente.`;
+                        icon = "success";
 
-                    // refrescar UI
-                    ids.forEach(id => {
+                        // Refrescar visualmente
+                        ids.forEach(id => {
                         const tr = tabla.querySelector(`tr[data-contrato-id="${id}"]`);
                         if (tr) {
-                        tr.dataset.estatus = String(nuevoEstatus);
-                        const cb = tr.querySelector(".select-contrato");
-                        if (cb) cb.checked = false;
+                            tr.dataset.estatus = String(nuevoEstatus);
+                            const cb = tr.querySelector(".select-contrato");
+                            if (cb) cb.checked = false;
                         }
-                    });
-                    seleccionados.clear();
-                    estatusSeleccion = null;
-                    renderAcciones();
+                        });
+
+                        seleccionados.clear();
+                        estatusSeleccion = null;
+                        renderAcciones();
+
+                        // Refrescamos página completa
+                        window.location.reload();
                     } else {
-                    title = "Error";
-                    text = "No se pudo actualizar.";
-                    icon = "error";
+                        title = "Error";
+                        text = "No se pudo actualizar.";
+                        icon = "error";
                     }
                     Swal.fire(title, text, icon);
-                }).catch(() => {
+                    })
+                    .catch(() => {
                     Swal.fire("Error", "No se pudo conectar con el servidor.", "error");
-                });
+                    });
                 });
             });
+            })();
+
             
-            // ===  ===
+            // === Inputs tipo="number" que aceptan sólo números ===
+            function onlyNumbers(el, trigger) {
+            const original = el.value;
+            el.value = el.value.replace(/\D+/g, "");            
+            }
+
+            document.querySelectorAll("input.number").forEach(el => {
+            el.addEventListener("input", () => onlyNumbers(el, "input"));
+            el.addEventListener("change", () => onlyNumbers(el, "change"));
+            });
+
+
+            
+
+            
+
 
             
             
+                            
 
 
            

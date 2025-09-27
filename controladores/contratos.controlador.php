@@ -176,7 +176,9 @@ class ControladorContratos
         $clienteEmail         = isset($_POST['cliente_email']) ? trim($_POST['cliente_email']) : '';
         $clienteBeneficiario  = isset($_POST['cliente_beneficiario']) ? strtoupper(trim($_POST['cliente_beneficiario'])) : '';
         $clienteReferencias   = isset($_POST['cliente_referencias']) ? strtoupper(trim($_POST['cliente_referencias'])) : '';
-        // Función para convertir una fecha YYYY-MM-DD a "DD de Mes de YYYY cliente_referencias"
+        $iceSer   = isset($_POST['dice_ser']) ? strtoupper(trim($_POST['dice_ser'])) : '';
+
+        // Función para convertir una fecha YYYY-MM-DD a "DD de Mes de YYYY dice_ser"
         $formatearFechaLarga = function ($fecha) {
             if (!$fecha) return '';
             $meses = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -209,7 +211,8 @@ class ControladorContratos
             'beneficiario' => $clienteBeneficiario,
             // Edad calculada del cliente
             'edad'         => isset($_POST['cliente_edad']) ? intval($_POST['cliente_edad']) : '',
-            'referencias'  => $clienteReferencias
+            'referencias'  => $clienteReferencias,
+            'dice_ser'     => $iceSer
         ];
         // Insertar cliente y obtener ID
         $clienteId = ModeloClientes::mdlAgregarClienteRetId($datosCliente);
@@ -249,7 +252,7 @@ class ControladorContratos
         $fraccion = implode(',', $fraccionesArr);
         $entregaPosecion = isset($_POST['entrega_posecion']) ? trim($_POST['entrega_posecion']) : '';
         $fechaFirma      = isset($_POST['fecha_firma']) ? trim($_POST['fecha_firma']) : '';
-        // Contenido habitacional como texto. Convertir a mayúsculas
+        // Contenido habitacional como texto. Convertir a mayúsculas 
         $habitacional    = isset($_POST['habitacional']) ? strtoupper(trim($_POST['habitacional'])) : '';
         $inicioPagos     = isset($_POST['inicio_pagos']) ? trim($_POST['inicio_pagos']) : '';
         $tipoContratoId  = isset($_POST['tipo_contrato']) ? trim($_POST['tipo_contrato']) : '';
@@ -592,6 +595,7 @@ class ControladorContratos
         'CLIENTE_BENEFICIARIO'       => $cliente['beneficiario'] ?? '',
         'CLIENTE_EDAD'               => $cliente['edad'] ?? '',
         'CLIENTE_REFERENCIA'         => $cliente['referencia'] ?? '',
+        'CLIENTE_DICE_SER'           => $cliente['dice_ser'] ?? '',
             
 
         // Desarrollo

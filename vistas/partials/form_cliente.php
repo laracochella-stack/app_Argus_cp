@@ -65,7 +65,13 @@
   <label class="form-label">Beneficiario</label>
   <input type="text" class="form-control text-uppercase" name="cliente_beneficiario" required placeholder="ej. nombre (parentezco)" oninput="this.value = this.value.toUpperCase();">
 </div>
-<div class="col-md-12">
+<div class="input-group mb-3">
+  <div class="col-md-12">
   <label class="form-label">Referencias personales</label>
-  <input type="text" class="form-control text-uppercase" name="cliente_referencias" required placeholder="Min. 2" oninput="this.value = this.value.toUpperCase();">
+  </div>
+  <input type="text" class="form-control" name="cliente_referencias" placeholder="Beneficiario" oninput="this.value = this.value.toUpperCase();">
+  <span class="input-group-text">/</span>
+  <input type="text" class="form-control" name="dice_ser" placeholder="Dice ser" oninput="this.value = this.value.toUpperCase();">
 </div>
+
+
