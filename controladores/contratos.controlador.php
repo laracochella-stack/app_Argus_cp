@@ -289,16 +289,25 @@ class ControladorContratos
             }
         }
 
-        // Convertir número a letras para superficie (requiere extensión intl habilitada)
+        // Convertir número a letras para superficie con decimales
         $numeroASuperficie = function ($numero) {
             if (!class_exists('NumberFormatter')) return $numero;
+
             $formatter = new NumberFormatter("es", NumberFormatter::SPELLOUT);
 
-            $entero = floor($numero); // tomamos solo la parte entera
+            $entero = floor($numero); // parte entera
+            $decimal = round(($numero - $entero) * 100); // tomamos hasta 2 decimales (centésimas)
+
             $letras = strtoupper($formatter->format($entero));
 
-            return $numero . " M²". " (" . $letras . "METROS CUADRADOS)";
+            if ($decimal > 0) {
+                $letrasDec = strtoupper($formatter->format($decimal));
+                return number_format($numero, 2) . " M² (" . $letras . " PUNTO " . $letrasDec . " METROS CUADRADOS)";
+            } else {
+                return number_format($numero, 0) . " M² (" . $letras . " METROS CUADRADOS)";
+            }
         };
+
 
 
         
@@ -650,10 +659,10 @@ class ControladorContratos
             mkdir($tmpDir, 0777, true);
         }
         // Construir nombres de archivos según cliente, tipo y fecha
-        $nombreCliente = preg_replace('/[^A-Za-z0-9_-]+/', '_', $cliente['nombre'] ?? 'cliente');
-        $tipoNom = preg_replace('/[^A-Za-z0-9_-]+/', '_', $tipoContrato ?? 'contrato');
-        $fecha = preg_replace('/[^0-9-]+/', '_', $contrato['fecha_firma_contrato'] ?? date('Y-m-d'));
-        $baseName = $nombreCliente . '_' . $tipoNom . '_' . $fecha;
+        $nombreCliente = preg_replace('/[^A-Za-z0-9_-]+/', '-', $cliente['nombre'] ?? 'cliente');
+        $tipoNom = preg_replace('/[^A-Za-z0-9_-]+/', '-', $tipoContrato ?? 'contrato');
+        $fecha = preg_replace('/[^A-Za-z0-9_-]+/', '-', $contrato['folio'] ?? 'folio');
+        $baseName = $fecha . '-' . $nombreCliente;
         $docxPath = $tmpDir . '/' . $baseName . '.docx';
         $pdfPath = $tmpDir . '/' . $baseName . '.pdf';
         $zipPath = $tmpDir . '/' . $baseName . '.zip';

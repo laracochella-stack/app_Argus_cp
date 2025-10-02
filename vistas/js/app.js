@@ -1296,141 +1296,88 @@ document.addEventListener('DOMContentLoaded', () => {
         // tooltip y sincronización de mensualidades y rango de pago
 
 
+    // === Relación entre rango de fechas, mensualidades y años de financiamiento ===
     (function () {
-        const inputMeses = document.querySelector('input[name="mensualidades"]');
-        const inputAnios = document.getElementById('crearRangoPago');
+    const inicioInput = document.getElementById('rangoPagoInicio');
+    const finInput = document.getElementById('rangoPagoFin');
+    const mensualidadesInput = document.querySelector('input[name="mensualidades"]');
+    const rangoAniosInput = document.getElementById('crearRangoPago');
 
-        if (inputMeses && inputAnios) {
-            // Inicializar tooltip de Bootstrap
-            const tooltip = new bootstrap.Tooltip(inputAnios, {
-            trigger: 'manual' // se controla con JS
-            });
-
-            // 🔹 De mensualidades → texto normalizado
-            inputMeses.addEventListener('input', function () {
-            const meses = parseInt(this.value, 10);
-            if (!isNaN(meses) && meses > 0) {
-                const anios = Math.floor(meses / 12);
-                const mesesRestantes = meses % 12;
-                inputAnios.value = formatearTiempo(anios, mesesRestantes);
-                tooltip.hide();
-            } else {
-                inputAnios.value = '';
-                tooltip.hide();
-            }
-            });
-
-            // 🔹 Mientras escribe en rango_pago → mostrar tooltip
-            inputAnios.addEventListener('input', function () {
-            const interpretacion = interpretarTexto(this.value);
-            if (interpretacion.totalMeses > 0) {
-                inputAnios.setAttribute("data-bs-original-title", "= " + formatearTiempo(interpretacion.anios, interpretacion.meses));
-                tooltip.show();
-            } else {
-                tooltip.hide();
-            }
-            });
-
-            // 🔹 Al salir → normalizar valor y ocultar tooltip
-            inputAnios.addEventListener('blur', function () {
-            const interpretacion = interpretarTexto(this.value);
-            if (interpretacion.totalMeses > 0) {
-                inputMeses.value = interpretacion.totalMeses;
-                this.value = formatearTiempo(interpretacion.anios, interpretacion.meses);
-            }
-            tooltip.hide();
-            });
-
-            // Helpers
-            function interpretarTexto(texto) {
-            texto = texto.toLowerCase().trim();
-            let anios = 0, meses = 0;
-
-            if (/^\d+[\.,]\d+$/.test(texto)) {
-                const partes = texto.split(/[\.,]/);
-                anios = parseInt(partes[0], 10);
-                meses = parseInt(partes[1], 10);
-            } else {
-                const matchAnios = texto.match(/(\d+)\s*(a|años|año)/);
-                const matchMeses = texto.match(/(\d+)\s*(m|meses|mes)/);
-
-                if (matchAnios) anios = parseInt(matchAnios[1], 10);
-                if (matchMeses) meses = parseInt(matchMeses[1], 10);
-
-                if (!matchAnios && !matchMeses) {
-                const numeros = texto.match(/\d+/g) || [];
-                if (numeros.length === 1) {
-                    meses = parseInt(numeros[0], 10);
-                } else if (numeros.length >= 2) {
-                    anios = parseInt(numeros[0], 10);
-                    meses = parseInt(numeros[1], 10);
-                }
-                }
-            }
-
-            const totalMeses = (anios * 12) + meses;
-            return { anios: Math.floor(totalMeses / 12), meses: totalMeses % 12, totalMeses };
-            }
-
-            function formatearTiempo(anios, meses) {
-            let texto = '';
-            if (anios > 0) texto += anios + (anios === 1 ? ' AÑO ' : ' AÑOS ');
-            if (meses > 0) texto += meses + (meses === 1 ? ' MES' : ' MESES');
-            if (!texto) texto = '';
-            return texto.trim();
-            }
+    // 🔹 Solo normalizar texto de años/meses (sin tocar mensualidades)
+    if (rangoAniosInput) {
+        rangoAniosInput.addEventListener('blur', function () {
+        const interpretacion = interpretarTexto(this.value);
+        if (interpretacion.totalMeses > 0) {
+            this.value = formatearTiempo(interpretacion.anios, interpretacion.meses);
         }
+        });
+    }
+
+    // 🔹 Calcular meses automáticamente según rango de fechas
+    if (inicioInput && finInput && mensualidadesInput && rangoAniosInput) {
+        function calcularMeses() {
+        const inicioVal = inicioInput.value;
+        const finVal = finInput.value;
+        if (!inicioVal || !finVal) return;
+
+        const inicio = new Date(inicioVal);
+        const fin = new Date(finVal);
+
+        if (isNaN(inicio) || isNaN(fin) || fin < inicio) return;
+
+        let meses = (fin.getFullYear() - inicio.getFullYear()) * 12;
+        meses += fin.getMonth() - inicio.getMonth();
+
+        if (fin.getDate() < inicio.getDate()) {
+            meses -= 1;
+        }
+
+        if (meses < 1) meses = 1;
+
+        // 🔸 Aquí SÍ calculamos mensualidades y años/meses
+        mensualidadesInput.value = meses;
+        rangoAniosInput.value = formatearTiempo(
+            Math.floor(meses / 12),
+            meses % 12
+        );
+        }
+
+        inicioInput.addEventListener('change', calcularMeses);
+        finInput.addEventListener('change', calcularMeses);
+    }
+
+    // Helpers
+    function interpretarTexto(texto) {
+        texto = texto.toLowerCase().trim();
+        let anios = 0, meses = 0;
+
+        const matchAnios = texto.match(/(\d+)\s*(a|años|año)/);
+        const matchMeses = texto.match(/(\d+)\s*(m|meses|mes)/);
+
+        if (matchAnios) anios = parseInt(matchAnios[1], 10);
+        if (matchMeses) meses = parseInt(matchMeses[1], 10);
+
+        if (!matchAnios && !matchMeses) {
+        const numeros = texto.match(/\d+/g) || [];
+        if (numeros.length === 1) meses = parseInt(numeros[0], 10);
+        else if (numeros.length >= 2) {
+            anios = parseInt(numeros[0], 10);
+            meses = parseInt(numeros[1], 10);
+        }
+        }
+
+        const totalMeses = (anios * 12) + meses;
+        return { anios: Math.floor(totalMeses / 12), meses: totalMeses % 12, totalMeses };
+    }
+
+    function formatearTiempo(anios, meses) {
+        let texto = '';
+        if (anios > 0) texto += anios + (anios === 1 ? ' AÑO ' : ' AÑOS ');
+        if (meses > 0) texto += meses + (meses === 1 ? ' MES' : ' MESES');
+        return texto.trim();
+    }
     })();
 
-    
-        // === Calcular meses automáticamente según rango de fechas ===
-        (function () {
-            const inicioInput = document.getElementById('rangoPagoInicio');
-            const finInput = document.getElementById('rangoPagoFin');
-            const mensualidadesInput = document.querySelector('input[name="mensualidades"]');
-            const rangoAniosInput = document.getElementById('crearRangoPago');
-
-            if (inicioInput && finInput && mensualidadesInput) {
-                function calcularMeses() {
-                    const inicioVal = inicioInput.value;
-                    const finVal = finInput.value;
-                    if (!inicioVal || !finVal) return;
-
-                    const inicio = new Date(inicioVal);
-                    const fin = new Date(finVal);
-
-                    if (isNaN(inicio) || isNaN(fin) || fin < inicio) return;
-
-                    // Calcular diferencia en meses
-                    let meses = (fin.getFullYear() - inicio.getFullYear()) * 12;
-                    meses += fin.getMonth() - inicio.getMonth();
-
-                    // Ajustar si el día de fin es menor al de inicio (ej. 15 ene a 10 feb → cuenta como 0 meses completos)
-                    if (fin.getDate() < inicio.getDate()) {
-                        meses -= 1;
-                    }
-
-                    if (meses < 1) meses = 1; // mínimo 1 mes
-                    mensualidadesInput.value = meses;
-
-                    // Actualizar rango en años/meses (ej. "2 AÑOS, 6 MESES")
-                    if (rangoAniosInput) {
-                        const anios = Math.floor(meses / 12);
-                        const restoMeses = meses % 12;
-                        let texto = "";
-                        if (anios > 0) texto += anios + (anios === 1 ? " AÑO" : " AÑOS");
-                        if (restoMeses > 0) {
-                            if (texto) texto += " ";
-                            texto += restoMeses + (restoMeses === 1 ? " MES" : " MESES");
-                        }
-                        rangoAniosInput.value = texto || "1 MES";
-                    }
-                }
-
-                inicioInput.addEventListener('change', calcularMeses);
-                finInput.addEventListener('change', calcularMeses);
-            }
-        })();
 
 
         
@@ -1593,8 +1540,67 @@ document.addEventListener('DOMContentLoaded', () => {
             el.addEventListener("change", () => onlyNumbers(el, "change"));
             });
 
-
+            // === Inputs tipo="number" que aceptan enteros y decimales ===
+            function onlyDecimals(el, trigger) {
+            const original = el.value;
+            // Reemplaza todo excepto números y punto
+            el.value = el.value.replace(/[^0-9.]/g, "");
             
+            // Evitar más de un punto decimal
+            const parts = el.value.split(".");
+            if (parts.length > 2) {
+                el.value = parts[0] + "." + parts.slice(1).join("").replace(/\./g, "");
+            }
+
+            console.log(`[onlyDecimals:${trigger}]`, original, "→", el.value);
+            }
+
+            // Aplica a todos los inputs con class="number_dec"
+            document.querySelectorAll("input.number_dec").forEach(el => {
+            el.addEventListener("input", () => onlyDecimals(el, "input"));
+            el.addEventListener("change", () => onlyDecimals(el, "change"));
+            });
+
+
+            // Toggle mostrar/ocultar form de contraseña por fila
+            document.querySelectorAll('.btnTogglePwd').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const row = document.getElementById(`rowPwd-${id}`);
+                if (row) row.style.display = (row.style.display === 'none' || row.style.display === '') ? 'table-row' : 'none';
+            });
+            });
+
+            // Cancelar edición
+            document.querySelectorAll('.btnCancelarPwd').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const row = document.getElementById(`rowPwd-${id}`);
+                if (row) row.style.display = 'none';
+            });
+            });
+
+            // Envío AJAX de cambio de contraseña
+            document.querySelectorAll('.formCambiarPassword').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const url = 'index.php?ruta=usuarios&accion=cambiarPassword';
+
+                fetch(url, { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp.status === 'ok') {
+                    Swal.fire({ title: 'Éxito', text: resp.message, icon: 'success', timer: 1800, showConfirmButton: false })
+                    .then(() => { window.location.reload(); });
+                    } else {
+                    Swal.fire('Error', resp.message || 'No se pudo actualizar', 'error');
+                    }
+                })
+                .catch(() => Swal.fire('Error', 'No se pudo conectar con el servidor', 'error'));
+            });
+            });
+
 
             
 

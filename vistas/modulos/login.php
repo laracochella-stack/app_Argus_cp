@@ -33,10 +33,10 @@
           </div>
         </form>
 
-        <!-- Enlace para abrir el modal de registro -->
+        <!-- Enlace para abrir el modal de registro 
         <div class="mt-3 text-center">
           <a href="#" data-bs-toggle="modal" data-bs-target="#modalRegistro">Crear cuenta</a>
-        </div>
+        </div>-->
 
         <?php
         // Llamar al controlador para procesar registro e inicio de sesión

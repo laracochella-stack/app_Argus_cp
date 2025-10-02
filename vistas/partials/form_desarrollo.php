@@ -16,7 +16,7 @@
 </div>
 <div class="col-md-6">
   <label class="form-label">Superficie</label>
-  <input type="text" class="form-control number" id="crearSuperficie" name="contrato_superficie" placeholder="TAMAÑO DE LA FRACCIÓN" required>
+  <input type="text" class="form-control number_dec" id="crearSuperficie" name="contrato_superficie" placeholder="TAMAÑO DE LA FRACCIÓN" required>
   <!-- Campo oculto para almacenar la superficie convertida a letras -->
   <input type="hidden" name="superficie_fixed" id="crearSuperficieFixed">
 </div>

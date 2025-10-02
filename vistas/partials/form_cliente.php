@@ -61,15 +61,12 @@
   <label class="form-label">Correo electrónico</label>
   <input type="email" class="form-control" name="cliente_email" placeholder="ej. micorreo@dominio.com" required>
 </div>
-<div class="col-md-6">
-  <label class="form-label">Beneficiario</label>
-  <input type="text" class="form-control text-uppercase" name="cliente_beneficiario" required placeholder="ej. nombre (parentezco)" oninput="this.value = this.value.toUpperCase();">
-</div>
+
 <div class="input-group mb-3">
   <div class="col-md-12">
-  <label class="form-label">Referencias personales</label>
+  <label class="form-label">Beneficiario</label>
   </div>
-  <input type="text" class="form-control" name="cliente_referencias" placeholder="BENEFICIARIO" oninput="this.value = this.value.toUpperCase();">
+  <input type="text" class="form-control text-uppercase" name="cliente_beneficiario" required placeholder="ej. nombre (parentezco)" oninput="this.value = this.value.toUpperCase();">
   <span class="input-group-text">/</span>
   <input type="text" class="form-control" name="dice_ser" placeholder="DICE SER" oninput="this.value = this.value.toUpperCase();">
 </div>
